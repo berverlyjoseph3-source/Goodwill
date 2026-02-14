@@ -12,8 +12,16 @@ interface FilterSidebarProps {
   onFilterChange: (filters: any) => void;
 }
 
+interface OpenSections {
+  category: boolean;
+  price: boolean;
+  brand: boolean;
+  availability: boolean;
+  rating: boolean;
+}
+
 export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) => {
-  const [openSections, setOpenSections] = useState({
+  const [openSections, setOpenSections] = useState<OpenSections>({
     category: true,
     price: true,
     brand: true,
@@ -21,7 +29,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
     rating: true
   });
 
-  const toggleSection = (section: string) => {
+  const toggleSection = (section: keyof OpenSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
@@ -40,7 +48,7 @@ export const FilterSidebar = ({ filters, onFilterChange }: FilterSidebarProps) =
   return (
     <aside className="bg-white rounded-xl shadow-sm p-6">
       <h2 className="text-lg font-semibold text-slate-800 mb-4">Filters</h2>
-      
+
       {/* Category Filter */}
       <div className="border-b border-gray-200 py-4">
         <button
