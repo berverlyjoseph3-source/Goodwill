@@ -129,52 +129,60 @@ export default async function handler(
 
       // Find or create user
       let userId = session?.user?.id;
-      
-      if (!userId) {
-        // Guest checkout - create temporary user or just store email
-        // For now, we'll store the order without user association
+
+      // ✅ FIXED: Don't include userId field at all for guest checkout
+      const orderData: any = {
+        orderNumber,
+        email: body.email,
+        status: 'PENDING',
+        paymentStatus: 'PENDING',
+        subtotal: body.subtotal,
+        tax: body.tax,
+        shippingCost: body.shippingCost,
+        total: body.total,
+        paymentMethod: body.paymentMethod,
+        stripePaymentId: body.stripePaymentId,
+        items: {
+          create: body.items.map(item => ({
+            productId: item.productId,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+          })),
+        },
+        shippingAddress: {
+          create: {
+            ...body.shippingAddress,
+            type: 'SHIPPING',
+            // ✅ FIXED: Don't set userId for guest checkout
+            ...(userId ? { userId } : {}),
+          },
+        },
+      };
+
+      // Only add user connection if logged in
+      if (userId) {
+        orderData.user = {
+          connect: { id: userId }
+        };
+      }
+
+      // Add billing address if provided
+      if (body.billingAddress) {
+        orderData.billingAddress = {
+          create: {
+            ...body.billingAddress,
+            type: 'BILLING',
+            // ✅ FIXED: Don't set userId for guest checkout
+            ...(userId ? { userId } : {}),
+          },
+        };
       }
 
       // Create order
       const order = await prisma.order.create({
-        data: {
-          orderNumber,
-          userId: userId || null,
-          email: body.email,
-          status: 'PENDING',
-          paymentStatus: 'PENDING',
-          subtotal: body.subtotal,
-          tax: body.tax,
-          shippingCost: body.shippingCost,
-          total: body.total,
-          paymentMethod: body.paymentMethod,
-          stripePaymentId: body.stripePaymentId,
-          items: {
-            create: body.items.map(item => ({
-              productId: item.productId,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              image: item.image,
-            })),
-          },
-          shippingAddress: {
-            create: {
-              ...body.shippingAddress,
-              type: 'SHIPPING',
-              userId: userId || null,
-            },
-          },
-          ...(body.billingAddress && {
-            billingAddress: {
-              create: {
-                ...body.billingAddress,
-                type: 'BILLING',
-                userId: userId || null,
-              },
-            },
-          }),
-        },
+        data: orderData,
         include: {
           items: true,
           shippingAddress: true,
@@ -197,7 +205,7 @@ export default async function handler(
       try {
         const { sendOrderConfirmation } = await import('../../../lib/email');
         await sendOrderConfirmation(order, order.email || session?.user?.email);
-        } catch (emailError) {
+      } catch (emailError) {
         console.error('Failed to send confirmation email:', emailError);
         // Don't fail the order if email fails
       }
