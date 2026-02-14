@@ -8,7 +8,7 @@ import {
   ShoppingBagIcon 
 } from '@heroicons/react/24/outline';
 import { useCartStore } from '../stores/cartStore';
-import { CartItem } from '../components/cart/CartItem';
+import { CartItem as CartItemComponent } from '../components/cart/CartItem';
 import { CartSummary } from '../components/cart/CartSummary';
 import { motion } from 'framer-motion';
 
@@ -77,15 +77,18 @@ export default function CartPage() {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                   >
-                    <CartItem
-                      item={item}
+                    <CartItemComponent
+                      item={{
+                        ...item,
+                        slug: item.slug || '' // Add slug if missing, or use empty string
+                      }}
                       onUpdateQuantity={updateQuantity}
                       onRemove={removeItem}
                     />
                   </motion.div>
                 ))}
               </div>
-              
+
               <div className="p-4 bg-soft-gray flex justify-between items-center">
                 <button
                   onClick={clearCart}
