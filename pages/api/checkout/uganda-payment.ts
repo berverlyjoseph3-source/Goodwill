@@ -1,6 +1,3 @@
-// pages/api/checkout/uganda-payment.ts
-// Complete Uganda payment processing endpoint
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
@@ -69,7 +66,7 @@ export default async function handler(
         publicKey: process.env.FLUTTERWAVE_PUBLIC_KEY!,
         secretKey: process.env.FLUTTERWAVE_SECRET_KEY!,
         encryptionKey: process.env.FLUTTERWAVE_ENCRYPTION_KEY!,
-        environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+        environment: (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox') as 'production' | 'sandbox',
       };
 
       // Validate Uganda phone number for mobile money
@@ -181,11 +178,12 @@ export default async function handler(
     // ============================================
     if (paymentMethod.provider === 'pesapal') {
       const { initializePesapalPayment } = await import('../../../lib/uganda-payments');
-      
+
+      // ✅ FIXED: Add type assertion for environment
       const pesapalConfig = {
         consumerKey: process.env.PESAPAL_CONSUMER_KEY!,
         consumerSecret: process.env.PESAPAL_CONSUMER_SECRET!,
-        environment: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+        environment: (process.env.NODE_ENV === 'production' ? 'production' : 'sandbox') as 'production' | 'sandbox',
       };
 
       const payment = await initializePesapalPayment(pesapalConfig, {
