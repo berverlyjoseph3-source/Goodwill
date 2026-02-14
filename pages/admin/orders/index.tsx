@@ -8,8 +8,10 @@ import { prisma } from '../../../lib/prisma';
 import Link from 'next/link';
 import { 
   MagnifyingGlassIcon,
-  ChevronRightIcon 
+  ChevronRightIcon,
+  ShoppingBagIcon // ✅ ADD THIS IMPORT
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast'; // ✅ ADD THIS IMPORT
 
 interface OrdersPageProps {
   orders: any[];
@@ -36,13 +38,13 @@ export default function OrdersPage({ orders: initialOrders, totalCount }: Orders
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`/api/admin/orders?search=${searchQuery}&status=${statusFilter}`);
       const data = await response.json();
       setOrders(data.orders);
     } catch (error) {
-      toast.error('Search failed');
+      toast.error('Search failed'); // ✅ NOW WORKS
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +80,7 @@ export default function OrdersPage({ orders: initialOrders, totalCount }: Orders
                            focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-transparent"
                 />
               </div>
-              
+
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -92,7 +94,7 @@ export default function OrdersPage({ orders: initialOrders, totalCount }: Orders
                 <option value="DELIVERED">Delivered</option>
                 <option value="CANCELLED">Cancelled</option>
               </select>
-              
+
               <button
                 type="submit"
                 disabled={isLoading}
@@ -191,7 +193,7 @@ export default function OrdersPage({ orders: initialOrders, totalCount }: Orders
             {orders.length === 0 && (
               <div className="text-center py-12">
                 <div className="bg-soft-gray rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <ShoppingBagIcon className="w-8 h-8 text-slate-400" />
+                  <ShoppingBagIcon className="w-8 h-8 text-slate-400" /> {/* ✅ NOW WORKS */}
                 </div>
                 <h3 className="text-lg font-medium text-slate-900 mb-2">
                   No orders found
