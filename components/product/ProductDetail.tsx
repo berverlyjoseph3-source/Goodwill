@@ -23,13 +23,12 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id,
+      id: product.id.toString(), // Convert number to string for cart store
       name: product.name,
       price: product.salePrice || product.price,
       image: product.image,
       quantity: quantity,
       inventory: product.inventory,
-      slug: product.slug,
     });
     toast.success('Added to cart!', {
       icon: '🛒',
@@ -125,7 +124,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
               </div>
             </div>
 
-            {/* Short Description */}
+            {/* Description */}
             <p className="text-slate-600 mb-6">
               {product.description}
             </p>
