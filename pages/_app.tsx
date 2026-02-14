@@ -2,8 +2,9 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import Head from 'next/head';
+import { AppProps } from 'next/app'; // ✅ ADD THIS IMPORT
 import { Header } from '../components/layout/Header';
-import { Footer } from '../components/layout/Footer';  // ✅ IMPORT FOOTER
+import { Footer } from '../components/layout/Footer';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import '../styles/globals.css';
 
@@ -12,7 +13,7 @@ const queryClient = new QueryClient();
 export default function App({ 
   Component, 
   pageProps: { session, ...pageProps } 
-}) {
+}: AppProps) { // ✅ ADD : AppProps TYPE ANNOTATION
   return (
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
@@ -25,7 +26,7 @@ export default function App({
           <main className="flex-grow">
             <Component {...pageProps} />
           </main>
-          <Footer />  {/* ✅ FOOTER APPEARS ON EVERY PAGE */}
+          <Footer />
         </div>
         <Toaster 
           position="top-center"
