@@ -8,6 +8,7 @@ import { InventoryAlert } from '../../components/admin/InventoryAlert';
 import { SalesChart } from '../../components/admin/SalesChart';
 import { prisma } from '../../lib/prisma';
 import { ProtectedRoute } from '../../components/auth/ProtectedRoute';
+import Link from 'next/link'; // ✅ ADD THIS IMPORT
 
 interface AdminDashboardProps {
   stats: {
