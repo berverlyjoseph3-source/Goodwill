@@ -78,10 +78,7 @@ export default function CartPage() {
                     exit={{ opacity: 0 }}
                   >
                     <CartItemComponent
-                      item={{
-                        ...item,
-                        slug: item.slug || '' // Add slug if missing, or use empty string
-                      }}
+                      item={item} // ✅ Simply pass the item as-is, no slug added
                       onUpdateQuantity={updateQuantity}
                       onRemove={removeItem}
                     />
