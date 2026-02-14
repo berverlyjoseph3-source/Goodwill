@@ -6,7 +6,7 @@ import { AccountLayout } from '../../components/account/AccountLayout';
 import { prisma } from '../../lib/prisma';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ShoppingBagIcon } from '@heroicons/react/24/outline'; // ✅ ADDED ShoppingBagIcon
 
 interface OrdersPageProps {
   orders: any[];
@@ -24,7 +24,7 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
           {orders.length === 0 ? (
             <div className="text-center py-12">
               <div className="bg-soft-gray rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <ShoppingBagIcon className="w-8 h-8 text-slate-400" />
+                <ShoppingBagIcon className="w-8 h-8 text-slate-400" /> {/* ✅ NOW WORKS */}
               </div>
               <h3 className="text-lg font-medium text-slate-900 mb-2">No orders yet</h3>
               <p className="text-slate-600 mb-6">
@@ -63,7 +63,7 @@ export default function OrdersPage({ orders }: OrdersPageProps) {
                         <ChevronRightIcon className="w-5 h-5 text-slate-400" />
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
                         {order.items.slice(0, 3).map((item: any) => (
