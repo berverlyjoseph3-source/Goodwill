@@ -1,10 +1,21 @@
+// Add type declaration for gtag at the top
+declare global {
+  interface Window {
+    gtag: (
+      command: string,
+      targetId: string,
+      config?: Record<string, any>
+    ) => void;
+  }
+}
+
 // Google Analytics 4
 export const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_ID;
 
 // Page view tracking
 export const pageview = (url: string) => {
-  if (typeof window.gtag !== 'undefined') {
-    window.gtag('config', GA_TRACKING_ID, {
+  if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
+    window.gtag('config', GA_TRACKING_ID as string, {
       page_path: url,
     });
   }
@@ -17,7 +28,7 @@ export const event = ({ action, category, label, value }: {
   label: string;
   value?: number;
 }) => {
-  if (typeof window.gtag !== 'undefined') {
+  if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
     window.gtag('event', action, {
       event_category: category,
       event_label: label,
@@ -35,8 +46,8 @@ export const ecommerce = {
       category: 'Ecommerce',
       label: product.name,
     });
-    
-    if (typeof window.gtag !== 'undefined') {
+
+    if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
       window.gtag('event', 'view_item', {
         currency: 'USD',
         value: product.salePrice || product.price,
@@ -53,7 +64,7 @@ export const ecommerce = {
       });
     }
   },
-  
+
   // Add to cart
   addToCart: (product: any, quantity: number) => {
     event({
@@ -62,8 +73,8 @@ export const ecommerce = {
       label: product.name,
       value: (product.salePrice || product.price) * quantity,
     });
-    
-    if (typeof window.gtag !== 'undefined') {
+
+    if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
       window.gtag('event', 'add_to_cart', {
         currency: 'USD',
         value: (product.salePrice || product.price) * quantity,
@@ -80,7 +91,7 @@ export const ecommerce = {
       });
     }
   },
-  
+
   // Begin checkout
   beginCheckout: (cart: any) => {
     event({
@@ -89,8 +100,8 @@ export const ecommerce = {
       label: 'Checkout Started',
       value: cart.subtotal,
     });
-    
-    if (typeof window.gtag !== 'undefined') {
+
+    if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
       window.gtag('event', 'begin_checkout', {
         currency: 'USD',
         value: cart.subtotal,
@@ -103,7 +114,7 @@ export const ecommerce = {
       });
     }
   },
-  
+
   // Purchase
   purchase: (order: any) => {
     event({
@@ -112,8 +123,8 @@ export const ecommerce = {
       label: `Order ${order.orderNumber}`,
       value: order.total,
     });
-    
-    if (typeof window.gtag !== 'undefined') {
+
+    if (typeof window !== 'undefined' && typeof window.gtag !== 'undefined') {
       window.gtag('event', 'purchase', {
         transaction_id: order.orderNumber,
         affiliation: 'Goodwill Medical Supplies',
@@ -143,7 +154,7 @@ export const customEvents = {
       value: resultsCount,
     });
   },
-  
+
   // Newsletter signup
   newsletterSignup: (email: string) => {
     event({
@@ -152,7 +163,7 @@ export const customEvents = {
       label: email,
     });
   },
-  
+
   // Quote request
   quoteRequest: (products: any[], total: number) => {
     event({
@@ -162,7 +173,7 @@ export const customEvents = {
       value: total,
     });
   },
-  
+
   // Error tracking
   error: (error: Error, context?: string) => {
     event({
