@@ -5,16 +5,16 @@ import { TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 interface CartItemProps {
   item: {
-    id: string; // Changed from number to string to match cart store
+    id: string;
     name: string;
     price: number;
     image: string;
     quantity: number;
-    slug: string;
+    slug?: string; // Make slug optional
     inventory?: number;
   };
-  onUpdateQuantity: (id: string, quantity: number) => void; // Changed from number to string
-  onRemove: (id: string) => void; // Changed from number to string
+  onUpdateQuantity: (id: string, quantity: number) => void;
+  onRemove: (id: string) => void;
 }
 
 export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
@@ -25,10 +25,14 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) =>
     setTimeout(() => onRemove(item.id), 300);
   };
 
+  // If slug exists, make it clickable, otherwise just show the image
+  const ProductLink = item.slug ? Link : 'div';
+  const linkProps = item.slug ? { href: `/product/${item.slug}` } : {};
+
   return (
     <div className={`p-4 flex items-start space-x-4 transition-opacity duration-300 ${isRemoving ? 'opacity-0' : 'opacity-100'}`}>
       {/* Product Image */}
-      <Link href={`/product/${item.slug}`} className="flex-shrink-0">
+      <ProductLink {...linkProps} className="flex-shrink-0">
         <div className="relative w-20 h-20 bg-soft-gray rounded-lg overflow-hidden">
           <Image
             src={item.image}
@@ -37,19 +41,25 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) =>
             className="object-cover"
           />
         </div>
-      </Link>
+      </ProductLink>
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between">
-          <Link 
-            href={`/product/${item.slug}`}
-            className="hover:text-medical-blue transition-colors"
-          >
+          {item.slug ? (
+            <Link 
+              href={`/product/${item.slug}`}
+              className="hover:text-medical-blue transition-colors"
+            >
+              <h3 className="text-sm font-medium text-slate-900 mb-1">
+                {item.name}
+              </h3>
+            </Link>
+          ) : (
             <h3 className="text-sm font-medium text-slate-900 mb-1">
               {item.name}
             </h3>
-          </Link>
+          )}
           <button
             onClick={handleRemove}
             className="text-slate-400 hover:text-red-600 transition-colors ml-4"
