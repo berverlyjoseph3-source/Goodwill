@@ -130,7 +130,7 @@ export default async function handler(
       // Find or create user
       let userId = session?.user?.id;
 
-      // ✅ FIXED: Don't include userId field at all for guest checkout
+      // Prepare order data
       const orderData: any = {
         orderNumber,
         email: body.email,
@@ -155,7 +155,6 @@ export default async function handler(
           create: {
             ...body.shippingAddress,
             type: 'SHIPPING',
-            // ✅ FIXED: Don't set userId for guest checkout
             ...(userId ? { userId } : {}),
           },
         },
@@ -174,7 +173,6 @@ export default async function handler(
           create: {
             ...body.billingAddress,
             type: 'BILLING',
-            // ✅ FIXED: Don't set userId for guest checkout
             ...(userId ? { userId } : {}),
           },
         };
@@ -202,9 +200,16 @@ export default async function handler(
         });
       }
 
+      // ✅ FIXED: Safely handle email for confirmation
       try {
         const { sendOrderConfirmation } = await import('../../../lib/email');
-        await sendOrderConfirmation(order, order.email || session?.user?.email);
+        const customerEmail = order.email || session?.user?.email;
+        
+        if (customerEmail) {
+          await sendOrderConfirmation(order, customerEmail);
+        } else {
+          console.warn('No email available for order confirmation');
+        }
       } catch (emailError) {
         console.error('Failed to send confirmation email:', emailError);
         // Don't fail the order if email fails
