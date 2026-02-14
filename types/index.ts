@@ -28,3 +28,9 @@ export interface Category {
   icon: string;
   productCount: number;
 }
+
+export interface SearchResult {
+  products: Product[];
+  categories: any[];
+  total: number;
+}
