@@ -5,7 +5,7 @@ import { TrashIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 interface CartItemProps {
   item: {
-    id: number;
+    id: string; // Changed from number to string to match cart store
     name: string;
     price: number;
     image: string;
@@ -13,8 +13,8 @@ interface CartItemProps {
     slug: string;
     inventory?: number;
   };
-  onUpdateQuantity: (id: number, quantity: number) => void;
-  onRemove: (id: number) => void;
+  onUpdateQuantity: (id: string, quantity: number) => void; // Changed from number to string
+  onRemove: (id: string) => void; // Changed from number to string
 }
 
 export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) => {
@@ -87,7 +87,7 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) =>
               <PlusIcon className="w-4 h-4" />
             </button>
           </div>
-          
+
           <p className="text-sm font-medium text-slate-900">
             ${(item.price * item.quantity).toFixed(2)}
           </p>
