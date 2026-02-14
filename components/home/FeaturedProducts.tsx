@@ -3,11 +3,16 @@ import Image from 'next/image';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { PRODUCTS } from '../../constants/images';
+import { Product } from '../../types';
 
-export const FeaturedProducts = ({ products = PRODUCTS.slice(0, 8) }) => {
+interface FeaturedProductsProps {
+  products?: Product[];
+}
+
+export const FeaturedProducts = ({ products = PRODUCTS.slice(0, 8) }: FeaturedProductsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {products.map((product) => (
+      {products.map((product: Product) => (
         <Link
           key={product.id}
           href={`/product/${product.slug}`}
@@ -27,12 +32,12 @@ export const FeaturedProducts = ({ products = PRODUCTS.slice(0, 8) }) => {
               </div>
             )}
           </div>
-          
+
           <div className="p-4">
             <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-medical-blue transition-colors line-clamp-2">
               {product.name}
             </h3>
-            
+
             <div className="flex items-center mb-2">
               <div className="flex items-center">
                 {[...Array(5)].map((_, i) => (
@@ -45,7 +50,7 @@ export const FeaturedProducts = ({ products = PRODUCTS.slice(0, 8) }) => {
               </div>
               <span className="text-xs text-slate-500 ml-2">({product.reviewCount})</span>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div>
                 {product.salePrice ? (
@@ -63,7 +68,7 @@ export const FeaturedProducts = ({ products = PRODUCTS.slice(0, 8) }) => {
                   </span>
                 )}
               </div>
-              
+
               <span className="text-sm text-slate-500">
                 {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
               </span>
