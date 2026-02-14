@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { PRODUCTS } from '../../constants/images';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Product } from '../../types';
 
 interface RelatedProductsProps {
   category: string;
@@ -10,12 +11,12 @@ interface RelatedProductsProps {
 }
 
 export const RelatedProducts = ({ category, currentProductId }: RelatedProductsProps) => {
-  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     // Filter products by same category, exclude current product
     const filtered = PRODUCTS
-      .filter(p => p.categorySlug === category && p.id !== currentProductId)
+      .filter((p: Product) => p.categorySlug === category && p.id !== currentProductId)
       .slice(0, 4);
     setRelatedProducts(filtered);
   }, [category, currentProductId]);
@@ -26,7 +27,7 @@ export const RelatedProducts = ({ category, currentProductId }: RelatedProductsP
     <div>
       <h2 className="text-xl font-bold text-slate-900 mb-6">You May Also Need</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        {relatedProducts.map((product) => (
+        {relatedProducts.map((product: Product) => (
           <Link
             key={product.id}
             href={`/product/${product.slug}`}
@@ -38,6 +39,7 @@ export const RelatedProducts = ({ category, currentProductId }: RelatedProductsP
                 alt={product.name}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, 25vw"
               />
               {product.salePrice && (
                 <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
