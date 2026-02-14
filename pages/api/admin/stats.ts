@@ -62,7 +62,7 @@ export default async function handler(
       prisma.order.count({ where: { status: 'SHIPPED' } }),
       prisma.order.count({ where: { status: 'DELIVERED' } }),
       prisma.order.count({ where: { status: 'CANCELLED' } }),
-      
+
       // Revenue
       prisma.order.aggregate({ 
         _sum: { total: true }, 
@@ -96,18 +96,18 @@ export default async function handler(
           paymentStatus: 'PAID' 
         } 
       }),
-      
+
       // Product stats
       prisma.product.count(),
       prisma.product.count({ where: { inventory: { lt: 10, gt: 0 } } }),
       prisma.product.count({ where: { inventory: 0 } }),
-      
+
       // User stats
       prisma.user.count(),
       prisma.user.count({ where: { createdAt: { gte: startOfDay } } }),
       prisma.user.count({ where: { createdAt: { gte: startOfWeek } } }),
       prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
-      
+
       // Recent orders
       prisma.order.findMany({
         take: 10,
@@ -117,8 +117,8 @@ export default async function handler(
           items: { take: 1 },
         },
       }),
-      
-      // Top products
+
+      // Top products - FIXED: Use images relation instead of image field
       prisma.product.findMany({
         take: 5,
         orderBy: { reviewCount: 'desc' },
@@ -126,7 +126,12 @@ export default async function handler(
           id: true,
           name: true,
           slug: true,
-          image: true,
+          images: { // ✅ Changed from 'image' to 'images'
+            select: {
+              url: true,
+            },
+            take: 1,
+          },
           price: true,
           salePrice: true,
           reviewCount: true,
@@ -134,7 +139,7 @@ export default async function handler(
           inventory: true,
         },
       }),
-      
+
       // Category stats
       prisma.category.findMany({
         select: {
@@ -146,13 +151,26 @@ export default async function handler(
       }),
     ]);
 
+    // Format top products to include image URL for frontend
+    const formattedTopProducts = topProducts.map(product => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      image: product.images[0]?.url || null, // Get first image URL
+      price: product.price,
+      salePrice: product.salePrice,
+      reviewCount: product.reviewCount,
+      rating: product.rating,
+      inventory: product.inventory,
+    }));
+
     // Generate sales chart data (last 7 days)
     const salesData = await Promise.all(
       Array.from({ length: 7 }, async (_, i) => {
         const date = new Date();
         date.setDate(date.getDate() - (6 - i));
         date.setHours(0, 0, 0, 0);
-        
+
         const nextDate = new Date(date);
         nextDate.setDate(nextDate.getDate() + 1);
 
@@ -205,7 +223,7 @@ export default async function handler(
         },
       },
       recentOrders,
-      topProducts,
+      topProducts: formattedTopProducts, // Use formatted products
       categoryStats,
       salesData,
     });
