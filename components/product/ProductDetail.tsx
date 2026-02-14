@@ -23,7 +23,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id.toString(), // Convert number to string for cart store
+      id: product.id.toString(),
       name: product.name,
       price: product.salePrice || product.price,
       image: product.image,
@@ -37,6 +37,11 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
     });
   };
 
+  // Prepare images array for gallery - use images if available, otherwise create array with single image
+  const productImages = product.images && product.images.length > 0 
+    ? product.images 
+    : [product.image];
+
   return (
     <div className="bg-white">
       <div className="container-padding py-8 lg:py-12">
@@ -45,7 +50,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
           {/* Gallery */}
           <div>
             <ProductGallery 
-              images={product.images || [product.image]} 
+              images={productImages}
               selectedIndex={selectedImage}
               onSelect={setSelectedImage}
               productName={product.name}
