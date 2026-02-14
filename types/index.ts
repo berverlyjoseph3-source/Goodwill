@@ -6,6 +6,7 @@ export interface Product {
   price: number;
   salePrice?: number;
   image: string;
+  images?: string[];
   category: string;
   categorySlug: string;
   brand: string;
@@ -33,4 +34,13 @@ export interface SearchResult {
   products: Product[];
   categories: any[];
   total: number;
+}
+
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  inventory: number;
 }
