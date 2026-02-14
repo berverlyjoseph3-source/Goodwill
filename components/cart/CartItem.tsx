@@ -10,7 +10,7 @@ interface CartItemProps {
     price: number;
     image: string;
     quantity: number;
-    slug?: string; // Make slug optional
+    slug?: string;
     inventory?: number;
   };
   onUpdateQuantity: (id: string, quantity: number) => void;
@@ -25,23 +25,32 @@ export const CartItem = ({ item, onUpdateQuantity, onRemove }: CartItemProps) =>
     setTimeout(() => onRemove(item.id), 300);
   };
 
-  // If slug exists, make it clickable, otherwise just show the image
-  const ProductLink = item.slug ? Link : 'div';
-  const linkProps = item.slug ? { href: `/product/${item.slug}` } : {};
-
   return (
     <div className={`p-4 flex items-start space-x-4 transition-opacity duration-300 ${isRemoving ? 'opacity-0' : 'opacity-100'}`}>
-      {/* Product Image */}
-      <ProductLink {...linkProps} className="flex-shrink-0">
-        <div className="relative w-20 h-20 bg-soft-gray rounded-lg overflow-hidden">
-          <Image
-            src={item.image}
-            alt={item.name}
-            fill
-            className="object-cover"
-          />
+      {/* Product Image - Conditionally render Link or div */}
+      {item.slug ? (
+        <Link href={`/product/${item.slug}`} className="flex-shrink-0">
+          <div className="relative w-20 h-20 bg-soft-gray rounded-lg overflow-hidden">
+            <Image
+              src={item.image}
+              alt={item.name}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </Link>
+      ) : (
+        <div className="flex-shrink-0">
+          <div className="relative w-20 h-20 bg-soft-gray rounded-lg overflow-hidden">
+            <Image
+              src={item.image}
+              alt={item.name}
+              fill
+              className="object-cover"
+            />
+          </div>
         </div>
-      </ProductLink>
+      )}
 
       {/* Product Info */}
       <div className="flex-1 min-w-0">
