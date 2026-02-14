@@ -2,32 +2,33 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PRODUCTS } from '../../constants/images';
+import { Product } from '../../types';
 
 interface RecentlyViewedProps {
   currentProductId: number;
 }
 
 export const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
-  const [recentProducts, setRecentProducts] = useState([]);
+  const [recentProducts, setRecentProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     // Get recently viewed from localStorage
     const viewed = localStorage.getItem('recentlyViewed');
-    let recentlyViewed = viewed ? JSON.parse(viewed) : [];
-    
+    let recentlyViewed: number[] = viewed ? JSON.parse(viewed) : [];
+
     // Add current product
     if (!recentlyViewed.includes(currentProductId)) {
       recentlyViewed.unshift(currentProductId);
       recentlyViewed = recentlyViewed.slice(0, 6); // Keep only 6
       localStorage.setItem('recentlyViewed', JSON.stringify(recentlyViewed));
     }
-    
+
     // Get product details
     const products = recentlyViewed
-      .map(id => PRODUCTS.find(p => p.id === id))
-      .filter(p => p && p.id !== currentProductId)
+      .map((id: number) => PRODUCTS.find((p: Product) => p.id === id))
+      .filter((p: Product | undefined): p is Product => p !== undefined && p.id !== currentProductId)
       .slice(0, 4);
-    
+
     setRecentProducts(products);
   }, [currentProductId]);
 
@@ -37,7 +38,7 @@ export const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
     <div>
       <h2 className="text-xl font-bold text-slate-900 mb-6">Recently Viewed</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-        {recentProducts.map((product) => (
+        {recentProducts.map((product: Product) => (
           <Link
             key={product.id}
             href={`/product/${product.slug}`}
@@ -49,6 +50,7 @@ export const RecentlyViewed = ({ currentProductId }: RecentlyViewedProps) => {
                 alt={product.name}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
+                sizes="(max-width: 768px) 50vw, 25vw"
               />
             </div>
             <div className="p-3">
