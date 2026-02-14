@@ -23,7 +23,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id.toString(),
+      id: product.id.toString(), // ✅ Only change: convert number to string for cart store
       name: product.name,
       price: product.salePrice || product.price,
       image: product.image,
@@ -37,10 +37,8 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
     });
   };
 
-  // Prepare images array for gallery - use images if available, otherwise create array with single image
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
-    : [product.image];
+  // ✅ For gallery - since your products don't have images array, just use single image
+  const productImages = [product.image];
 
   return (
     <div className="bg-white">
