@@ -15,7 +15,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface DashboardProps {
-  user: any;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    phone: string | null;
+    role: string;
+  } | null;
   stats: {
     totalOrders: number;
     totalSpent: number;
@@ -24,6 +30,21 @@ interface DashboardProps {
 }
 
 export default function AccountDashboard({ user, stats }: DashboardProps) {
+  if (!user) {
+    return (
+      <ProtectedRoute>
+        <AccountLayout>
+          <div className="text-center py-12">
+            <p className="text-slate-600">User not found. Please sign in again.</p>
+            <Link href="/auth/signin" className="btn-primary mt-4 inline-block">
+              Sign In
+            </Link>
+          </div>
+        </AccountLayout>
+      </ProtectedRoute>
+    );
+  }
+
   return (
     <ProtectedRoute>
       <AccountLayout>
@@ -31,7 +52,7 @@ export default function AccountDashboard({ user, stats }: DashboardProps) {
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-medical-blue to-medical-blue-dark rounded-2xl p-6 text-white">
             <h1 className="text-2xl font-bold mb-2">
-              Welcome back, {user.name}! 👋
+              Welcome back, {user.name || 'User'}! 👋
             </h1>
             <p className="text-blue-100">
               Manage your orders, wishlist, and account settings
@@ -86,9 +107,10 @@ export default function AccountDashboard({ user, stats }: DashboardProps) {
               </Link>
             </div>
             <div className="divide-y divide-gray-200">
-              {/* This will be populated from database */}
               <div className="px-6 py-4 text-center text-slate-500">
-                No orders yet. Start shopping to see your orders here.
+                {stats.totalOrders === 0 
+                  ? "No orders yet. Start shopping to see your orders here."
+                  : "Your recent orders will appear here."}
               </div>
             </div>
           </div>
@@ -142,9 +164,25 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Safely access email with null check
+  const userEmail = session.user?.email;
+  
+  if (!userEmail) {
+    return {
+      props: {
+        user: null,
+        stats: {
+          totalOrders: 0,
+          totalSpent: 0,
+          wishlistCount: 0,
+        },
+      },
+    };
+  }
+
   // Get user data
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: userEmail },
     select: {
       id: true,
       name: true,
@@ -153,6 +191,19 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       role: true,
     },
   });
+
+  if (!user) {
+    return {
+      props: {
+        user: null,
+        stats: {
+          totalOrders: 0,
+          totalSpent: 0,
+          wishlistCount: 0,
+        },
+      },
+    };
+  }
 
   // Get stats
   const orders = await prisma.order.findMany({
