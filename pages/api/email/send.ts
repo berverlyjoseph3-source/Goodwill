@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       to: adminEmail,
       subject: `Contact Form: ${body.subject}`,
       html: adminHtml,
-      replyTo: body.email,
+      reply_to: body.email, // ✅ FIXED: Changed from replyTo to reply_to
     });
 
     // Send auto-reply to customer
