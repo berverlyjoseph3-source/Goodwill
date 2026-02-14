@@ -46,7 +46,12 @@ export default async function handler(
                   id: true,
                   name: true,
                   slug: true,
-                  image: true,
+                  images: { // ✅ FIXED: Changed from 'image' to 'images'
+                    select: {
+                      url: true,
+                    },
+                    take: 1,
+                  },
                 },
               },
             },
@@ -80,9 +85,21 @@ export default async function handler(
         });
       }
 
+      // Format the order items to include image URL for frontend
+      const formattedOrder = {
+        ...order,
+        items: order.items.map(item => ({
+          ...item,
+          product: item.product ? {
+            ...item.product,
+            image: item.product.images[0]?.url || null,
+          } : null,
+        })),
+      };
+
       return res.status(200).json({
         success: true,
-        order,
+        order: formattedOrder,
       });
     } catch (error) {
       console.error('GET order error:', error);
