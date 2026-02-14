@@ -5,14 +5,14 @@ import { prisma } from '../../../lib/prisma';
 import { compare } from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma), // THIS IS WHAT YOU NEED!
+  adapter: PrismaAdapter(prisma),
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
+    // signUp is REMOVED from here - it doesn't belong in NextAuth config
     error: '/auth/error',
     verifyRequest: '/auth/verify-request',
     newUser: '/account',
