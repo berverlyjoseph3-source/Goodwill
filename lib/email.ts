@@ -7,17 +7,17 @@ interface EmailOptions {
   subject: string;
   html: string;
   from?: string;
-  replyTo?: string;
+  reply_to?: string; // Changed from replyTo to reply_to for Resend API
 }
 
-export async function sendEmail({ to, subject, html, from = 'Goodwill Medical <noreply@goodwillmedical.com>', replyTo }: EmailOptions) {
+export async function sendEmail({ to, subject, html, from = 'Goodwill Medical <noreply@goodwillmedical.com>', reply_to }: EmailOptions) {
   try {
     const data = await resend.emails.send({
       from,
       to: Array.isArray(to) ? to : [to],
       subject,
       html,
-      replyTo,
+      reply_to, // Using the correct field name for Resend
     });
     return { success: true, data };
   } catch (error) {
@@ -95,7 +95,7 @@ export async function sendOrderConfirmation(order: any, userEmail: string) {
     to: userEmail,
     subject: `Order Confirmation #${order.orderNumber}`,
     html,
-    replyTo: 'support@goodwillmedical.com',
+    reply_to: 'support@goodwillmedical.com', // Changed from replyTo
   });
 }
 
@@ -179,7 +179,7 @@ export async function sendContactAutoReply(name: string, email: string) {
     to: email,
     subject: 'Thank You for Contacting Goodwill Medical Supplies',
     html,
-    replyTo: 'support@goodwillmedical.com',
+    reply_to: 'support@goodwillmedical.com', // Changed from replyTo
   });
 }
 
