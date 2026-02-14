@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface CartItem {
+export interface CartItem {
   id: string;
   name: string;
   price: number;
@@ -20,22 +20,22 @@ interface CartStore {
   clearCart: () => void;
 }
 
-export const useCartStore = create < CartStore > ()(
+export const useCartStore = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
       totalItems: 0,
       subtotal: 0,
-      
+
       addItem: (newItem) => {
         const items = get().items;
         const existingItem = items.find(item => item.id === newItem.id);
-        
+
         if (existingItem) {
           const updatedItems = items.map(item =>
-            item.id === newItem.id ?
-            { ...item, quantity: item.quantity + newItem.quantity } :
-            item
+            item.id === newItem.id
+              ? { ...item, quantity: item.quantity + newItem.quantity }
+              : item
           );
           set({
             items: updatedItems,
@@ -51,7 +51,7 @@ export const useCartStore = create < CartStore > ()(
           });
         }
       },
-      
+
       removeItem: (id) => {
         const updatedItems = get().items.filter(item => item.id !== id);
         set({
@@ -60,7 +60,7 @@ export const useCartStore = create < CartStore > ()(
           subtotal: updatedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
         });
       },
-      
+
       updateQuantity: (id, quantity) => {
         const updatedItems = get().items.map(item =>
           item.id === id ? { ...item, quantity } : item
@@ -71,7 +71,7 @@ export const useCartStore = create < CartStore > ()(
           subtotal: updatedItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
         });
       },
-      
+
       clearCart: () => set({ items: [], totalItems: 0, subtotal: 0 })
     }),
     {
