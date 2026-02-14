@@ -5,6 +5,7 @@ import { authOptions } from '../api/auth/[...nextauth]';
 import { ProtectedRoute } from '../../components/auth/ProtectedRoute';
 import { AccountLayout } from '../../components/account/AccountLayout';
 import { prisma } from '../../lib/prisma';
+import Link from 'next/link'; // ✅ ADD THIS IMPORT
 import { UserIcon, EnvelopeIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -204,8 +205,20 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
     };
   }
 
+  // Safely get user email
+  const userEmail = session.user?.email;
+  
+  if (!userEmail) {
+    return {
+      redirect: {
+        destination: '/auth/signin',
+        permanent: false,
+      },
+    };
+  }
+
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: userEmail },
     select: {
       id: true,
       name: true,
@@ -213,6 +226,15 @@ export async function getServerSideProps(context: GetServerSidePropsContext) {
       phone: true,
     },
   });
+
+  if (!user) {
+    return {
+      redirect: {
+        destination: '/auth/signin',
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
