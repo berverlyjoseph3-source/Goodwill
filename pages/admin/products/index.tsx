@@ -14,7 +14,8 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowUpIcon,
-  ArrowDownIcon 
+  ArrowDownIcon,
+  CubeIcon // ✅ ADD THIS IMPORT
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -52,7 +53,7 @@ export default function ProductsPage({ products: initialProducts, totalCount }: 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
       const response = await fetch(`/api/admin/products?search=${searchQuery}`);
       const data = await response.json();
@@ -71,12 +72,12 @@ export default function ProductsPage({ products: initialProducts, totalCount }: 
       setSortField(field);
       setSortOrder('asc');
     }
-    
+
     // Sort products locally
     const sorted = [...products].sort((a, b) => {
       const aVal = a[field];
       const bVal = b[field];
-      
+
       if (typeof aVal === 'string') {
         return sortOrder === 'asc' 
           ? aVal.localeCompare(bVal)
@@ -87,7 +88,7 @@ export default function ProductsPage({ products: initialProducts, totalCount }: 
           : (bVal || 0) - (aVal || 0);
       }
     });
-    
+
     setProducts(sorted);
   };
 
@@ -272,7 +273,7 @@ export default function ProductsPage({ products: initialProducts, totalCount }: 
             {products.length === 0 && (
               <div className="text-center py-12">
                 <div className="bg-soft-gray rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <CubeIcon className="w-8 h-8 text-slate-400" />
+                  <CubeIcon className="w-8 h-8 text-slate-400" /> {/* ✅ NOW WORKS */}
                 </div>
                 <h3 className="text-lg font-medium text-slate-900 mb-2">
                   No products found
