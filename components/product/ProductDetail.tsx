@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { StarIcon, ShieldCheckIcon, TruckIcon } from '@heroicons/react/24/solid';
+import { ShoppingCartIcon, DocumentTextIcon, ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Accordion } from '@/components/ui/Accordion';
 import { ProductGallery } from './ProductGallery';
 import { ProductReviews } from './ProductReviews';
 import { RelatedProducts } from './RelatedProducts';
 import { useCartStore } from '@/stores/cartStore';
 import toast from 'react-hot-toast';
+import { Product } from '@/types';
 
 interface ProductDetailProps {
   product: Product;
@@ -17,16 +20,24 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addToCart = useCartStore((state) => state.addItem);
-  
+
   const handleAddToCart = () => {
-    addToCart({ ...product, quantity });
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.salePrice || product.price,
+      image: product.image,
+      quantity: quantity,
+      inventory: product.inventory,
+      slug: product.slug,
+    });
     toast.success('Added to cart!', {
       icon: '🛒',
       duration: 3000,
       position: 'bottom-center'
     });
   };
-  
+
   return (
     <div className="bg-white">
       <div className="container-padding py-8 lg:py-12">
@@ -35,9 +46,10 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
           {/* Gallery */}
           <div>
             <ProductGallery 
-              images={product.images} 
+              images={product.images || [product.image]} 
               selectedIndex={selectedImage}
               onSelect={setSelectedImage}
+              productName={product.name}
             />
           </div>
 
@@ -48,7 +60,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
               <h1 className="text-2xl lg:text-3xl font-bold text-slate-800 mb-3">
                 {product.name}
               </h1>
-              
+
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className="flex items-center">
@@ -67,9 +79,9 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
                     {product.reviewCount} reviews
                   </span>
                 </div>
-                
+
                 <span className="text-sm text-slate-500">|</span>
-                
+
                 <span className="text-sm text-slate-600">
                   SKU: {product.sku}
                 </span>
@@ -88,7 +100,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
                   </span>
                 )}
               </div>
-              
+
               <div className="mt-2 flex items-center space-x-2">
                 <div className={`w-3 h-3 rounded-full ${
                   product.inventory > 10 
@@ -115,7 +127,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
 
             {/* Short Description */}
             <p className="text-slate-600 mb-6">
-              {product.shortDescription}
+              {product.description}
             </p>
 
             {/* Quantity Selector */}
@@ -165,7 +177,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
                 <ShoppingCartIcon className="w-5 h-5 mr-2" />
                 Add to Cart
               </button>
-              
+
               <button
                 className="btn-secondary flex-1 flex items-center justify-center"
                 aria-label="Request bulk pricing"
@@ -201,12 +213,16 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
                 title: 'Product Specifications',
                 content: (
                   <div className="grid md:grid-cols-2 gap-4 p-4">
-                    {product.specifications.map((spec, index) => (
-                      <div key={index} className="flex justify-between py-2 border-b">
-                        <span className="font-medium text-slate-700">{spec.name}</span>
-                        <span className="text-slate-600">{spec.value}</span>
-                      </div>
-                    ))}
+                    {product.specifications && product.specifications.length > 0 ? (
+                      product.specifications.map((spec, index) => (
+                        <div key={index} className="flex justify-between py-2 border-b">
+                          <span className="font-medium text-slate-700">{spec.name}</span>
+                          <span className="text-slate-600">{spec.value}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-slate-600 col-span-2">No specifications available.</p>
+                    )}
                   </div>
                 )
               },
@@ -239,7 +255,7 @@ export const ProductDetail = ({ product }: ProductDetailProps) => {
             You May Also Need
           </h2>
           <RelatedProducts 
-            category={product.categoryId} 
+            category={product.categorySlug} 
             currentProductId={product.id} 
           />
         </div>
