@@ -1,11 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { CATEGORIES } from '../../constants/images';
+import { Category } from '../../types';
 
-export const FeaturedCategories = ({ categories = CATEGORIES }) => {
+interface FeaturedCategoriesProps {
+  categories?: Category[];
+}
+
+export const FeaturedCategories = ({ categories = CATEGORIES }: FeaturedCategoriesProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-      {categories.map((category) => (
+      {categories.map((category: Category) => (
         <Link
           key={category.id}
           href={`/category/${category.slug}`}
