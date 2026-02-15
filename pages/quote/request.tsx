@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion, AnimatePresence } from 'framer-motion'; // ✅ ADD THESE IMPORTS
 import { 
   DocumentTextIcon, 
   ShoppingCartIcon,
@@ -24,7 +25,7 @@ export default function QuoteRequestPage() {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     // Account Info
     accountType: 'business',
@@ -33,7 +34,7 @@ export default function QuoteRequestPage() {
     lastName: '',
     email: '',
     phone: '',
-    
+
     // Address
     address1: '',
     address2: '',
@@ -41,12 +42,12 @@ export default function QuoteRequestPage() {
     state: '',
     zipCode: '',
     country: 'US',
-    
+
     // Quote Details
     products: [] as any[],
     message: '',
     urgent: false,
-    
+
     // How did you hear?
     referral: '',
   });
@@ -65,7 +66,7 @@ export default function QuoteRequestPage() {
 
   const handleAddProduct = (product: any) => {
     const existing = formData.products.find(p => p.id === product.id);
-    
+
     if (existing) {
       setFormData({
         ...formData,
@@ -83,7 +84,7 @@ export default function QuoteRequestPage() {
       });
       toast.success(`${product.name} added to quote request`);
     }
-    
+
     setSearchQuery('');
     setSearchResults([]);
     setShowProductSearch(false);
@@ -94,7 +95,7 @@ export default function QuoteRequestPage() {
       handleRemoveProduct(productId);
       return;
     }
-    
+
     setFormData({
       ...formData,
       products: formData.products.map(p =>
@@ -114,10 +115,10 @@ export default function QuoteRequestPage() {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    
+
     if (query.length >= 2) {
       const results = PRODUCTS
-        .filter(p => 
+        .filter((p: any) => 
           p.name.toLowerCase().includes(query.toLowerCase()) ||
           p.category.toLowerCase().includes(query.toLowerCase()) ||
           p.sku?.toLowerCase().includes(query.toLowerCase())
@@ -140,7 +141,7 @@ export default function QuoteRequestPage() {
       setIsSubmitting(false);
       setIsSubmitted(true);
       toast.success('Quote request submitted successfully!');
-      
+
       // Reset form
       setFormData({
         accountType: 'business',
@@ -160,9 +161,9 @@ export default function QuoteRequestPage() {
         urgent: false,
         referral: '',
       });
-      
+
       setStep(1);
-      
+
       // Redirect after 3 seconds
       setTimeout(() => {
         router.push('/');
@@ -436,8 +437,8 @@ export default function QuoteRequestPage() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg 
                                  focus:outline-none focus:ring-2 focus:ring-medical-blue focus:border-transparent"
                       />
-                      
-                      {/* Search Results Dropdown */}
+
+                      {/* Search Results Dropdown - NOW WORKS */}
                       <AnimatePresence>
                         {showProductSearch && searchResults.length > 0 && (
                           <motion.div
@@ -529,7 +530,7 @@ export default function QuoteRequestPage() {
                           </div>
                         </div>
                       ))}
-                      
+
                       <div className="flex justify-between items-center pt-3">
                         <span className="text-sm text-slate-600">Subtotal:</span>
                         <span className="text-lg font-bold text-slate-900">
@@ -672,7 +673,7 @@ export default function QuoteRequestPage() {
                   {/* Additional Information */}
                   <div>
                     <h3 className="font-semibold text-slate-900 mb-4">Additional Information</h3>
-                    
+
                     <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">
