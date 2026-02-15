@@ -15,6 +15,7 @@ import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { Header } from '../../components/layout/Header';
 import { Footer } from '../../components/layout/Footer';
 import { CommentSection } from '../../components/blog/CommentSection';
+import { MEDICAL_IMAGES } from '../../constants/images';
 import toast from 'react-hot-toast';
 
 interface BlogPost {
@@ -41,7 +42,7 @@ interface BlogPostPageProps {
   post: BlogPost;
 }
 
-// Mock blog posts - ALL POSTS HAVE LIKES PROPERTY
+// Mock blog posts - USING LOCAL IMAGES FROM MEDICAL_IMAGES
 const BLOG_POSTS: BlogPost[] = [
   {
     id: 1,
@@ -51,11 +52,11 @@ const BLOG_POSTS: BlogPost[] = [
     content: '<p>Content here...</p>',
     author: 'Dr. Sarah Chen',
     authorRole: 'Chief Medical Officer',
-    authorImage: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.doctor1,
     authorBio: 'Dr. Sarah Chen has over 20 years of experience in hospital administration.',
     category: 'Healthcare Technology',
     tags: ['Smart Devices', 'IoT', 'Home Care', 'AI'],
-    image: 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=1200&q=80',
+    image: MEDICAL_IMAGES.products.patientMonitor,
     date: '2024-01-15',
     readTime: 6,
     views: 1234,
@@ -70,11 +71,11 @@ const BLOG_POSTS: BlogPost[] = [
     content: '<p>Content here...</p>',
     author: 'Michael Rodriguez',
     authorRole: 'Quality Assurance Director',
-    authorImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.doctor2,
     authorBio: 'Michael Rodriguez oversees quality assurance for all medical devices.',
     category: 'Regulations',
     tags: ['FDA', 'Compliance', 'Safety'],
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=1200&q=80',
+    image: MEDICAL_IMAGES.about.facility,
     date: '2024-01-10',
     readTime: 8,
     views: 987,
@@ -83,17 +84,17 @@ const BLOG_POSTS: BlogPost[] = [
   },
   {
     id: 3,
-    name: 'Essential PPE Guide for Healthcare Facilities',
+    title: 'Essential PPE Guide for Healthcare Facilities',
     slug: 'essential-ppe-guide-healthcare-facilities',
     excerpt: 'Best practices for PPE selection, usage, and inventory management...',
     content: '<p>Content here...</p>',
     author: 'Dr. Emily Watson',
     authorRole: 'Infection Control Specialist',
-    authorImage: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.patient1,
     authorBio: 'Dr. Emily Watson specializes in infection prevention and control.',
     category: 'PPE',
     tags: ['PPE', 'Safety', 'Infection Control'],
-    image: 'https://images.unsplash.com/photo-1584636633446-b9c3d91a8d24?w=1200&q=80',
+    image: MEDICAL_IMAGES.categories.ppe,
     date: '2024-01-05',
     readTime: 5,
     views: 1567,
@@ -108,11 +109,11 @@ const BLOG_POSTS: BlogPost[] = [
     content: '<p>Content here...</p>',
     author: 'James Park',
     authorRole: 'Physical Therapist',
-    authorImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.patient2,
     authorBio: 'James Park is a licensed physical therapist with 15 years of experience.',
     category: 'Mobility',
     tags: ['Wheelchairs', 'Walkers', 'Mobility'],
-    image: 'https://images.unsplash.com/photo-1584518938427-8fd3918eb3c0?w=1200&q=80',
+    image: MEDICAL_IMAGES.categories.mobility,
     date: '2023-12-28',
     readTime: 7,
     views: 876,
@@ -127,11 +128,11 @@ const BLOG_POSTS: BlogPost[] = [
     content: '<p>Content here...</p>',
     author: 'Dr. Sarah Chen',
     authorRole: 'Chief Medical Officer',
-    authorImage: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.doctor1,
     authorBio: 'Dr. Sarah Chen leads our clinical research initiatives.',
     category: 'Respiratory',
     tags: ['Oxygen', 'CPAP', 'Respiratory'],
-    image: 'https://images.unsplash.com/photo-1584547366618-c4673b5e9b16?w=1200&q=80',
+    image: MEDICAL_IMAGES.categories.respiratory,
     date: '2023-12-20',
     readTime: 6,
     views: 1098,
@@ -146,11 +147,11 @@ const BLOG_POSTS: BlogPost[] = [
     content: '<p>Content here...</p>',
     author: 'Michael Rodriguez',
     authorRole: 'Quality Assurance Director',
-    authorImage: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&q=80',
+    authorImage: MEDICAL_IMAGES.testimonials.doctor2,
     authorBio: 'Michael Rodriguez oversees quality assurance for all medical equipment.',
     category: 'Equipment Maintenance',
     tags: ['Hospital Beds', 'Maintenance'],
-    image: 'https://images.unsplash.com/photo-1587351021759-3772687fe598?w=1200&q=80',
+    image: MEDICAL_IMAGES.categories.hospitalFurniture,
     date: '2023-12-15',
     readTime: 5,
     views: 654,
