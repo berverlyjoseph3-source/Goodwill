@@ -3,7 +3,7 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// ============ PRODUCTS DATABASE ============
+// ============ PRODUCTS DATABASE WITH LOCAL IMAGES ============
 const PRODUCTS = [
   {
     id: 1,
@@ -12,7 +12,7 @@ const PRODUCTS = [
     sku: 'MW-1001',
     price: 299.99,
     salePrice: 249.99,
-    image: 'https://images.unsplash.com/photo-1584518938427-8fd3918eb3c0?w=600&q=80',
+    image: '/images/products/wheelchair.jpg', // LOCAL PATH
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Medical',
@@ -37,7 +37,7 @@ const PRODUCTS = [
     sku: 'MW-1002',
     price: 1299.99,
     salePrice: 1099.99,
-    image: 'https://images.unsplash.com/photo-1584518962554-17041c39b3f8?w=600&q=80',
+    image: '/images/products/wheelchair.jpg', // LOCAL PATH
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Medical',
@@ -62,7 +62,7 @@ const PRODUCTS = [
     sku: 'RE-2001',
     price: 899.99,
     salePrice: 799.99,
-    image: 'https://images.unsplash.com/photo-1584547366618-c4673b5e9b16?w=600&q=80',
+    image: '/images/products/oxygen.jpg', // LOCAL PATH
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'HealthCare Pro',
@@ -87,7 +87,7 @@ const PRODUCTS = [
     sku: 'RE-2002',
     price: 599.99,
     salePrice: 549.99,
-    image: 'https://images.unsplash.com/photo-1584547366618-c4673b5e9b16?w=600&q=80',
+    image: '/images/products/oxygen.jpg', // LOCAL PATH
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'MedTech',
@@ -111,7 +111,7 @@ const PRODUCTS = [
     slug: 'adjustable-hospital-bed',
     sku: 'HF-3001',
     price: 1299.99,
-    image: 'https://images.unsplash.com/photo-1587351021759-3772687fe598?w=600&q=80',
+    image: '/images/products/hospital-bed.jpg', // LOCAL PATH
     category: 'Hospital Furniture',
     categorySlug: 'hospital-furniture',
     brand: 'CarePlus',
@@ -135,7 +135,7 @@ const PRODUCTS = [
     slug: 'digital-bp-monitor',
     sku: 'DD-4001',
     price: 49.99,
-    image: 'https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=600&q=80',
+    image: '/images/products/bp-monitor.jpg', // LOCAL PATH
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'Vital Signs',
@@ -160,7 +160,7 @@ const PRODUCTS = [
     sku: 'DD-4002',
     price: 89.99,
     salePrice: 79.99,
-    image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=600&q=80',
+    image: '/images/products/stethoscope.jpg', // LOCAL PATH
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'MedTech',
@@ -184,7 +184,7 @@ const PRODUCTS = [
     slug: 'n95-masks-50-pack',
     sku: 'PPE-5001',
     price: 89.99,
-    image: 'https://images.unsplash.com/photo-1584636633446-b9c3d91a8d24?w=600&q=80',
+    image: '/images/products/ppe-mask.jpg', // LOCAL PATH
     category: 'PPE & Disposables',
     categorySlug: 'ppe',
     brand: 'HealthCare Pro',
@@ -204,13 +204,13 @@ const PRODUCTS = [
   }
 ];
 
-// ============ CATEGORIES DATABASE ============
+// ============ CATEGORIES DATABASE WITH LOCAL IMAGES ============
 const CATEGORIES = [
   {
     id: 1,
     name: 'Mobility Aids',
     slug: 'mobility-aids',
-    image: 'https://images.unsplash.com/photo-1584518938427-8fd3918eb3c0?w=800&q=80',
+    image: '/images/categories/mobility.jpg', // LOCAL PATH
     description: 'Wheelchairs, walkers, scooters, and rollators',
     icon: '🦽',
   },
@@ -218,7 +218,7 @@ const CATEGORIES = [
     id: 2,
     name: 'Respiratory Equipment',
     slug: 'respiratory',
-    image: 'https://images.unsplash.com/photo-1584547366618-c4673b5e9b16?w=800&q=80',
+    image: '/images/categories/respiratory.jpg', // LOCAL PATH
     description: 'Oxygen concentrators, CPAP, ventilators',
     icon: '💨',
   },
@@ -226,7 +226,7 @@ const CATEGORIES = [
     id: 3,
     name: 'Hospital Furniture',
     slug: 'hospital-furniture',
-    image: 'https://images.unsplash.com/photo-1587351021759-3772687fe598?w=800&q=80',
+    image: '/images/categories/hospital-furniture.jpg', // LOCAL PATH
     description: 'Hospital beds, examination tables, patient chairs',
     icon: '🛏️',
   },
@@ -234,7 +234,7 @@ const CATEGORIES = [
     id: 4,
     name: 'Diagnostic Devices',
     slug: 'diagnostic',
-    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&q=80',
+    image: '/images/categories/diagnostic.jpg', // LOCAL PATH
     description: 'BP monitors, stethoscopes, thermometers',
     icon: '🩺',
   },
@@ -242,7 +242,7 @@ const CATEGORIES = [
     id: 5,
     name: 'PPE & Disposables',
     slug: 'ppe',
-    image: 'https://images.unsplash.com/photo-1584636633446-b9c3d91a8d24?w=800&q=80',
+    image: '/images/categories/ppe.jpg', // LOCAL PATH
     description: 'Masks, gloves, gowns, sanitizers',
     icon: '🧤',
   },
@@ -250,7 +250,7 @@ const CATEGORIES = [
     id: 6,
     name: 'Home Care Supplies',
     slug: 'home-care',
-    image: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=800&q=80',
+    image: '/images/categories/home-care.jpg', // LOCAL PATH
     description: 'Daily living aids, bathroom safety',
     icon: '🏠',
   },
@@ -261,7 +261,7 @@ async function main() {
 
   // ============ CLEAN DATABASE ============
   console.log('🧹 Cleaning database...');
-  
+
   await prisma.$transaction([
     prisma.orderItem.deleteMany(),
     prisma.order.deleteMany(),
@@ -277,7 +277,7 @@ async function main() {
     prisma.user.deleteMany(),
     prisma.verificationToken.deleteMany(),
   ]);
-  
+
   console.log('✅ Database cleaned\n');
 
   // ============ CREATE USERS ============
@@ -393,7 +393,7 @@ async function main() {
   const product1 = await prisma.product.findUnique({
     where: { slug: PRODUCTS[0].slug },
   });
-  
+
   const product2 = await prisma.product.findUnique({
     where: { slug: PRODUCTS[5].slug },
   });
@@ -421,14 +421,14 @@ async function main() {
               name: product1.name,
               price: product1.salePrice || product1.price,
               quantity: 1,
-              image: product1.images?.[0]?.url || product1.image,
+              image: product1.image, // ✅ Now using local path
             },
             {
               productId: product2.id,
               name: product2.name,
               price: product2.price,
               quantity: 2,
-              image: product2.images?.[0]?.url || product2.image,
+              image: product2.image, // ✅ Now using local path
             },
           ],
         },
@@ -511,7 +511,7 @@ async function main() {
   console.log(`   📋 Orders: 1 created`);
   console.log(`   ❤️ Wishlist: 1 item`);
   console.log(`   ⭐ Reviews: 1 created\n`);
-  
+
   console.log('🔐 Test Credentials:');
   console.log('   ┌─────────────────┬──────────────────────────────┬─────────────┐');
   console.log('   │ Role            │ Email                        │ Password    │');
@@ -520,7 +520,7 @@ async function main() {
   console.log('   │ Manager         │ manager@goodwillmedical.com  │ manager123  │');
   console.log('   │ Customer        │ customer@goodwillmedical.com │ customer123 │');
   console.log('   └─────────────────┴──────────────────────────────┴─────────────┘\n');
-  
+
   console.log('🚀 Ready to start! Run: npm run dev');
 }
 
