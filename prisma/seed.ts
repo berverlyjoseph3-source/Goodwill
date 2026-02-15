@@ -3,7 +3,6 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-// ============ PRODUCTS DATABASE WITH LOCAL IMAGES ============
 const PRODUCTS = [
   {
     id: 1,
@@ -12,21 +11,15 @@ const PRODUCTS = [
     sku: 'MW-1001',
     price: 299.99,
     salePrice: 249.99,
-    image: '/images/products/wheelchair.jpg', // LOCAL PATH
+    image: '/images/products/wheelchair.jpg',
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Medical',
     rating: 4.8,
     reviewCount: 124,
     inventory: 15,
-    description: 'Lightweight aluminum frame wheelchair with comfortable padded seat and durable wheels. Perfect for daily use.',
-    features: [
-      'Weight capacity: 300 lbs',
-      'Frame material: Aluminum',
-      'Seat width: 18 inches',
-      'Weight: 35 lbs',
-      'Foldable design'
-    ],
+    description: 'Lightweight aluminum frame wheelchair.',
+    features: ['Weight capacity: 300 lbs', 'Foldable design'],
     deliveryEstimate: '2-3 business days',
     warranty: '2 years',
   },
@@ -37,21 +30,15 @@ const PRODUCTS = [
     sku: 'MW-1002',
     price: 1299.99,
     salePrice: 1099.99,
-    image: '/images/products/wheelchair.jpg', // LOCAL PATH
+    image: '/images/products/wheelchair.jpg',
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Medical',
     rating: 4.7,
     reviewCount: 56,
     inventory: 8,
-    description: 'Electric wheelchair with joystick control, long battery life, and comfortable seating.',
-    features: [
-      'Weight capacity: 350 lbs',
-      'Battery range: 15 miles',
-      'Top speed: 5 mph',
-      'Weight: 120 lbs',
-      'Adjustable armrests'
-    ],
+    description: 'Electric wheelchair with joystick control.',
+    features: ['Battery range: 15 miles', 'Weight: 120 lbs'],
     deliveryEstimate: '5-7 business days',
     warranty: '3 years',
   },
@@ -62,70 +49,52 @@ const PRODUCTS = [
     sku: 'RE-2001',
     price: 899.99,
     salePrice: 799.99,
-    image: '/images/products/oxygen.jpg', // LOCAL PATH
+    image: '/images/products/oxygen.jpg',
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'HealthCare Pro',
     rating: 4.9,
     reviewCount: 89,
     inventory: 12,
-    description: 'Compact and lightweight, provides continuous oxygen flow. Battery lasts up to 5 hours.',
-    features: [
-      'Oxygen output: 1-5 L/min',
-      'Weight: 5 lbs',
-      'Battery life: 5 hours',
-      'Noise level: <40 dB',
-      'Includes carrying case'
-    ],
+    description: 'Compact and lightweight oxygen concentrator.',
+    features: ['Battery life: 5 hours', 'Weight: 5 lbs'],
     deliveryEstimate: '2-3 business days',
     warranty: '2 years',
   },
   {
     id: 4,
-    name: 'CPAP Machine with Heated Humidifier',
+    name: 'CPAP Machine',
     slug: 'cpap-machine',
     sku: 'RE-2002',
     price: 599.99,
     salePrice: 549.99,
-    image: '/images/products/oxygen.jpg', // LOCAL PATH
+    image: '/images/products/oxygen.jpg',
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'MedTech',
     rating: 4.8,
     reviewCount: 142,
     inventory: 18,
-    description: 'Auto-adjusting CPAP with heated humidifier for comfortable sleep therapy.',
-    features: [
-      'Pressure range: 4-20 cmH2O',
-      'Auto-ramp feature',
-      'Heated humidifier',
-      'Whisper-quiet operation',
-      'Data tracking via app'
-    ],
+    description: 'Auto-adjusting CPAP with heated humidifier.',
+    features: ['Pressure range: 4-20 cmH2O', 'Auto-ramp'],
     deliveryEstimate: '2-3 business days',
     warranty: '2 years',
   },
   {
     id: 5,
-    name: 'Adjustable Electric Hospital Bed',
+    name: 'Adjustable Hospital Bed',
     slug: 'adjustable-hospital-bed',
     sku: 'HF-3001',
     price: 1299.99,
-    image: '/images/products/hospital-bed.jpg', // LOCAL PATH
+    image: '/images/products/hospital-bed.jpg',
     category: 'Hospital Furniture',
     categorySlug: 'hospital-furniture',
     brand: 'CarePlus',
     rating: 4.7,
     reviewCount: 56,
     inventory: 7,
-    description: 'Fully adjustable electric bed with remote control. Includes side rails and locking casters.',
-    features: [
-      'Weight capacity: 450 lbs',
-      'Electric adjustment',
-      'Includes side rails',
-      'Locking casters',
-      'Mattress included'
-    ],
+    description: 'Fully adjustable electric bed.',
+    features: ['Weight capacity: 450 lbs', 'Includes side rails'],
     deliveryEstimate: '7-10 business days',
     warranty: '5 years',
   },
@@ -135,21 +104,15 @@ const PRODUCTS = [
     slug: 'digital-bp-monitor',
     sku: 'DD-4001',
     price: 49.99,
-    image: '/images/products/bp-monitor.jpg', // LOCAL PATH
+    image: '/images/products/bp-monitor.jpg',
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'Vital Signs',
     rating: 4.8,
     reviewCount: 203,
     inventory: 45,
-    description: 'Automatic inflation, large LCD display, detects irregular heartbeat.',
-    features: [
-      'One-touch operation',
-      'Large LCD display',
-      'Irregular heartbeat detection',
-      '200 memory recall',
-      'Includes 4 AA batteries'
-    ],
+    description: 'Automatic inflation blood pressure monitor.',
+    features: ['Large LCD display', '200 memory recall'],
     deliveryEstimate: '1-2 business days',
     warranty: '1 year',
   },
@@ -160,21 +123,15 @@ const PRODUCTS = [
     sku: 'DD-4002',
     price: 89.99,
     salePrice: 79.99,
-    image: '/images/products/stethoscope.jpg', // LOCAL PATH
+    image: '/images/products/stethoscope.jpg',
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'MedTech',
     rating: 4.9,
     reviewCount: 178,
     inventory: 32,
-    description: 'Dual-head stethoscope with non-chill rim and adjustable frequency.',
-    features: [
-      'Dual-head design',
-      'Non-chill rim',
-      'Adjustable frequency',
-      'Latex-free tubing',
-      'Includes 2 sets of ear tips'
-    ],
+    description: 'Dual-head stethoscope.',
+    features: ['Non-chill rim', 'Adjustable frequency'],
     deliveryEstimate: '1-2 business days',
     warranty: '2 years',
   },
@@ -184,84 +141,33 @@ const PRODUCTS = [
     slug: 'n95-masks-50-pack',
     sku: 'PPE-5001',
     price: 89.99,
-    image: '/images/products/ppe-mask.jpg', // LOCAL PATH
+    image: '/images/products/ppe-mask.jpg',
     category: 'PPE & Disposables',
     categorySlug: 'ppe',
     brand: 'HealthCare Pro',
     rating: 4.7,
     reviewCount: 167,
     inventory: 0,
-    description: 'FDA-approved N95 respirator masks. 95% filtration efficiency.',
-    features: [
-      'FDA approved',
-      'NIOSH certified',
-      '95% filtration',
-      'Adjustable nose clip',
-      'Latex-free straps'
-    ],
+    description: 'FDA-approved N95 respirator masks.',
+    features: ['95% filtration', 'Adjustable nose clip'],
     deliveryEstimate: '3-5 business days',
     warranty: 'Non-returnable',
   }
 ];
 
-// ============ CATEGORIES DATABASE WITH LOCAL IMAGES ============
 const CATEGORIES = [
-  {
-    id: 1,
-    name: 'Mobility Aids',
-    slug: 'mobility-aids',
-    image: '/images/categories/mobility.jpg', // LOCAL PATH
-    description: 'Wheelchairs, walkers, scooters, and rollators',
-    icon: '🦽',
-  },
-  {
-    id: 2,
-    name: 'Respiratory Equipment',
-    slug: 'respiratory',
-    image: '/images/categories/respiratory.jpg', // LOCAL PATH
-    description: 'Oxygen concentrators, CPAP, ventilators',
-    icon: '💨',
-  },
-  {
-    id: 3,
-    name: 'Hospital Furniture',
-    slug: 'hospital-furniture',
-    image: '/images/categories/hospital-furniture.jpg', // LOCAL PATH
-    description: 'Hospital beds, examination tables, patient chairs',
-    icon: '🛏️',
-  },
-  {
-    id: 4,
-    name: 'Diagnostic Devices',
-    slug: 'diagnostic',
-    image: '/images/categories/diagnostic.jpg', // LOCAL PATH
-    description: 'BP monitors, stethoscopes, thermometers',
-    icon: '🩺',
-  },
-  {
-    id: 5,
-    name: 'PPE & Disposables',
-    slug: 'ppe',
-    image: '/images/categories/ppe.jpg', // LOCAL PATH
-    description: 'Masks, gloves, gowns, sanitizers',
-    icon: '🧤',
-  },
-  {
-    id: 6,
-    name: 'Home Care Supplies',
-    slug: 'home-care',
-    image: '/images/categories/home-care.jpg', // LOCAL PATH
-    description: 'Daily living aids, bathroom safety',
-    icon: '🏠',
-  },
+  { id: 1, name: 'Mobility Aids', slug: 'mobility-aids', image: '/images/categories/mobility.jpg', description: 'Wheelchairs, walkers, scooters', icon: '🦽' },
+  { id: 2, name: 'Respiratory', slug: 'respiratory', image: '/images/categories/respiratory.jpg', description: 'Oxygen, CPAP, ventilators', icon: '💨' },
+  { id: 3, name: 'Hospital Furniture', slug: 'hospital-furniture', image: '/images/categories/hospital-furniture.jpg', description: 'Beds, tables, chairs', icon: '🛏️' },
+  { id: 4, name: 'Diagnostic', slug: 'diagnostic', image: '/images/categories/diagnostic.jpg', description: 'BP monitors, stethoscopes', icon: '🩺' },
+  { id: 5, name: 'PPE', slug: 'ppe', image: '/images/categories/ppe.jpg', description: 'Masks, gloves, gowns', icon: '🧤' },
+  { id: 6, name: 'Home Care', slug: 'home-care', image: '/images/categories/home-care.jpg', description: 'Daily living aids', icon: '🏠' },
 ];
 
 async function main() {
-  console.log('🌱 Seeding database...\n');
-
-  // ============ CLEAN DATABASE ============
-  console.log('🧹 Cleaning database...');
-
+  console.log('🌱 Seeding...');
+  
+  // Clean database
   await prisma.$transaction([
     prisma.orderItem.deleteMany(),
     prisma.order.deleteMany(),
@@ -278,258 +184,104 @@ async function main() {
     prisma.verificationToken.deleteMany(),
   ]);
 
-  console.log('✅ Database cleaned\n');
+  // Create users
+  const adminPwd = await bcrypt.hash('admin123', 12);
+  const managerPwd = await bcrypt.hash('manager123', 12);
+  const customerPwd = await bcrypt.hash('customer123', 12);
 
-  // ============ CREATE USERS ============
-  console.log('👥 Creating users...');
+  const admin = await prisma.user.create({ data: { email: 'admin@goodwillmedical.com', password: adminPwd, name: 'Admin User', role: 'ADMIN', emailVerified: new Date() } });
+  const manager = await prisma.user.create({ data: { email: 'manager@goodwillmedical.com', password: managerPwd, name: 'Manager User', role: 'MANAGER', emailVerified: new Date() } });
+  const customer = await prisma.user.create({ data: { email: 'customer@goodwillmedical.com', password: customerPwd, name: 'John Customer', role: 'CUSTOMER', phone: '(555) 123-4567', emailVerified: new Date() } });
 
-  // Admin user
-  const adminPassword = await bcrypt.hash('admin123', 12);
-  const admin = await prisma.user.create({
-    data: {
-      email: 'admin@goodwillmedical.com',
-      password: adminPassword,
-      name: 'Admin User',
-      role: 'ADMIN',
-      emailVerified: new Date(),
-    },
-  });
-  console.log('   ✅ Admin created:', admin.email);
-
-  // Manager user
-  const managerPassword = await bcrypt.hash('manager123', 12);
-  const manager = await prisma.user.create({
-    data: {
-      email: 'manager@goodwillmedical.com',
-      password: managerPassword,
-      name: 'Manager User',
-      role: 'MANAGER',
-      emailVerified: new Date(),
-    },
-  });
-  console.log('   ✅ Manager created:', manager.email);
-
-  // Customer user
-  const customerPassword = await bcrypt.hash('customer123', 12);
-  const customer = await prisma.user.create({
-    data: {
-      email: 'customer@goodwillmedical.com',
-      password: customerPassword,
-      name: 'John Customer',
-      role: 'CUSTOMER',
-      phone: '(555) 123-4567',
-      emailVerified: new Date(),
-    },
-  });
-  console.log('   ✅ Customer created:', customer.email);
-  console.log('✅ Users created successfully\n');
-
-  // ============ CREATE CATEGORIES ============
-  console.log('📁 Creating categories...');
-
-  for (const category of CATEGORIES) {
-    await prisma.category.create({
-      data: {
-        name: category.name,
-        slug: category.slug,
-        description: category.description,
-        image: category.image,
-        icon: category.icon,
-        order: category.id,
-      },
-    });
-    console.log(`   ✅ Created: ${category.name}`);
+  // Create categories
+  for (const cat of CATEGORIES) {
+    await prisma.category.create({ data: { name: cat.name, slug: cat.slug, description: cat.description, image: cat.image, icon: cat.icon, order: cat.id } });
   }
-  console.log(`✅ Created ${CATEGORIES.length} categories\n`);
 
-  // ============ CREATE PRODUCTS ============
-  console.log('📦 Creating products...');
-
-  for (const product of PRODUCTS) {
-    const category = await prisma.category.findUnique({
-      where: { slug: product.categorySlug },
-    });
-
+  // Create products
+  for (const prod of PRODUCTS) {
+    const category = await prisma.category.findUnique({ where: { slug: prod.categorySlug } });
     if (category) {
       await prisma.product.create({
         data: {
-          sku: product.sku,
-          name: product.name,
-          slug: product.slug,
-          description: product.description,
-          shortDescription: product.description.slice(0, 100) + '...',
-          categoryId: category.id,
-          brand: product.brand,
-          price: product.price,
-          salePrice: product.salePrice || null,
-          inventory: product.inventory,
-          rating: product.rating,
-          reviewCount: product.reviewCount,
-          deliveryEstimate: product.deliveryEstimate,
-          warranty: product.warranty,
-          isFeatured: product.id <= 4,
-          isNew: product.id > 6,
-          tags: [product.categorySlug, product.brand.toLowerCase().replace(' ', '-')],
-          features: product.features,
-          images: {
-            create: [
-              {
-                url: product.image,
-                alt: product.name,
-                order: 0,
-              },
-            ],
-          },
+          sku: prod.sku, name: prod.name, slug: prod.slug, description: prod.description,
+          shortDescription: prod.description.slice(0, 100), categoryId: category.id,
+          brand: prod.brand, price: prod.price, salePrice: prod.salePrice || null,
+          inventory: prod.inventory, rating: prod.rating, reviewCount: prod.reviewCount,
+          deliveryEstimate: prod.deliveryEstimate, warranty: prod.warranty,
+          isFeatured: prod.id <= 4, tags: [prod.categorySlug],
+          features: prod.features,
+          images: { create: [{ url: prod.image, alt: prod.name, order: 0 }] },
         },
       });
-      console.log(`   ✅ Created: ${product.name}`);
     }
   }
-  console.log(`✅ Created ${PRODUCTS.length} products\n`);
 
-  // ============ CREATE SAMPLE ORDER ============
-  console.log('📋 Creating sample order...');
+  // Create sample order with images from the PRODUCTS array
+  const product1 = PRODUCTS[0]; // Use the source data, not Prisma query
+  const product2 = PRODUCTS[5];
 
-  const product1 = await prisma.product.findUnique({
-    where: { slug: PRODUCTS[0].slug },
-  });
+  const category1 = await prisma.category.findUnique({ where: { slug: product1.categorySlug } });
+  const category2 = await prisma.category.findUnique({ where: { slug: product2.categorySlug } });
 
-  const product2 = await prisma.product.findUnique({
-    where: { slug: PRODUCTS[5].slug },
-  });
+  if (category1 && category2) {
+    const dbProduct1 = await prisma.product.findFirst({ where: { name: product1.name } });
+    const dbProduct2 = await prisma.product.findFirst({ where: { name: product2.name } });
 
-  if (product1 && product2) {
-    const order = await prisma.order.create({
-      data: {
-        orderNumber: `ORD-${Date.now()}`,
-        userId: customer.id,
-        email: customer.email,
-        status: 'DELIVERED',
-        paymentStatus: 'PAID',
-        subtotal: 349.98,
-        tax: 28.00,
-        shippingCost: 0,
-        total: 377.98,
-        paymentMethod: 'Credit Card',
-        stripePaymentId: 'pi_sample123456',
-        carrier: 'FedEx',
-        trackingNumber: '789012345678',
-        items: {
-          create: [
-            {
-              productId: product1.id,
-              name: product1.name,
-              price: product1.salePrice || product1.price,
-              quantity: 1,
-              image: product1.image, // ✅ Now using local path
-            },
-            {
-              productId: product2.id,
-              name: product2.name,
-              price: product2.price,
-              quantity: 2,
-              image: product2.image, // ✅ Now using local path
-            },
-          ],
-        },
-        shippingAddress: {
-          create: {
-            userId: customer.id,
-            type: 'SHIPPING',
-            firstName: 'John',
-            lastName: 'Customer',
-            address1: '123 Main Street',
-            city: 'Chicago',
-            state: 'IL',
-            postalCode: '60601',
-            country: 'US',
-            phone: '(555) 123-4567',
-            isDefault: true,
+    if (dbProduct1 && dbProduct2) {
+      await prisma.order.create({
+        data: {
+          orderNumber: `ORD-${Date.now()}`,
+          userId: customer.id,
+          email: customer.email,
+          status: 'DELIVERED',
+          paymentStatus: 'PAID',
+          subtotal: 349.98,
+          tax: 28,
+          shippingCost: 0,
+          total: 377.98,
+          paymentMethod: 'Credit Card',
+          carrier: 'FedEx',
+          trackingNumber: '789012345678',
+          items: {
+            create: [
+              { 
+                productId: dbProduct1.id, 
+                name: dbProduct1.name, 
+                price: dbProduct1.salePrice || dbProduct1.price, 
+                quantity: 1, 
+                image: product1.image // Use from source, not from Prisma
+              },
+              { 
+                productId: dbProduct2.id, 
+                name: dbProduct2.name, 
+                price: dbProduct2.price, 
+                quantity: 2, 
+                image: product2.image // Use from source, not from Prisma
+              }
+            ]
           },
-        },
-      },
-    });
-    console.log(`   ✅ Created order: ${order.orderNumber}`);
+          shippingAddress: {
+            create: {
+              userId: customer.id,
+              type: 'SHIPPING',
+              firstName: 'John',
+              lastName: 'Customer',
+              address1: '123 Main St',
+              city: 'Chicago',
+              state: 'IL',
+              postalCode: '60601',
+              country: 'US',
+              phone: '(555) 123-4567',
+              isDefault: true
+            }
+          }
+        }
+      });
+    }
   }
-  console.log('✅ Sample order created\n');
 
-  // ============ CREATE WISHLIST ITEM ============
-  console.log('❤️ Creating wishlist item...');
-
-  const wishlistProduct = await prisma.product.findUnique({
-    where: { slug: PRODUCTS[1].slug },
-  });
-
-  if (wishlistProduct) {
-    await prisma.wishlistItem.create({
-      data: {
-        userId: customer.id,
-        productId: wishlistProduct.id,
-      },
-    });
-    console.log('   ✅ Added product to wishlist');
-  }
-  console.log('✅ Wishlist item created\n');
-
-  // ============ CREATE REVIEW ============
-  console.log('⭐ Creating product review...');
-
-  const reviewProduct = await prisma.product.findUnique({
-    where: { slug: PRODUCTS[0].slug },
-  });
-
-  if (reviewProduct) {
-    await prisma.review.create({
-      data: {
-        userId: customer.id,
-        productId: reviewProduct.id,
-        rating: 5,
-        title: 'Excellent wheelchair!',
-        content: 'This wheelchair is very comfortable and easy to maneuver. Highly recommend for both hospital and home use.',
-        verified: true,
-      },
-    });
-
-    // Update product rating
-    await prisma.product.update({
-      where: { id: reviewProduct.id },
-      data: {
-        rating: 4.8,
-        reviewCount: { increment: 1 },
-      },
-    });
-    console.log('   ✅ Added 5-star review');
-  }
-  console.log('✅ Product review created\n');
-
-  // ============ SUMMARY ============
-  console.log('🎉 Database seeded successfully!\n');
-  console.log('📊 Summary:');
-  console.log(`   👥 Users: 3 created`);
-  console.log(`   📁 Categories: ${CATEGORIES.length} created`);
-  console.log(`   📦 Products: ${PRODUCTS.length} created`);
-  console.log(`   📋 Orders: 1 created`);
-  console.log(`   ❤️ Wishlist: 1 item`);
-  console.log(`   ⭐ Reviews: 1 created\n`);
-
-  console.log('🔐 Test Credentials:');
-  console.log('   ┌─────────────────┬──────────────────────────────┬─────────────┐');
-  console.log('   │ Role            │ Email                        │ Password    │');
-  console.log('   ├─────────────────┼──────────────────────────────┼─────────────┤');
-  console.log('   │ Admin           │ admin@goodwillmedical.com    │ admin123    │');
-  console.log('   │ Manager         │ manager@goodwillmedical.com  │ manager123  │');
-  console.log('   │ Customer        │ customer@goodwillmedical.com │ customer123 │');
-  console.log('   └─────────────────┴──────────────────────────────┴─────────────┘\n');
-
-  console.log('🚀 Ready to start! Run: npm run dev');
+  console.log('✅ Seeded!');
 }
 
-main()
-  .catch((e) => {
-    console.error('\n❌ Seeding failed:');
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().catch(console.error).finally(() => prisma.$disconnect());
