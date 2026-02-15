@@ -1,4 +1,4 @@
-import { PrismaClient, AddressType } from '@prisma/client';
+import { PrismaClient, AddressType, OrderStatus, PaymentStatus, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -165,10 +165,9 @@ const CATEGORIES = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding database...\n');
-
+  console.log('🌱 Seeding database...');
+  
   // Clean database
-  console.log('🧹 Cleaning database...');
   await prisma.$transaction([
     prisma.orderItem.deleteMany(),
     prisma.order.deleteMany(),
@@ -184,51 +183,44 @@ async function main() {
     prisma.user.deleteMany(),
     prisma.verificationToken.deleteMany(),
   ]);
-  console.log('✅ Database cleaned\n');
 
-  // Create users with admin credentials
-  console.log('👥 Creating users...');
-  const adminPassword = await bcrypt.hash('admin123', 12);
-  const managerPassword = await bcrypt.hash('manager123', 12);
-  const customerPassword = await bcrypt.hash('customer123', 12);
+  // Create users
+  const adminPwd = await bcrypt.hash('admin123', 12);
+  const managerPwd = await bcrypt.hash('manager123', 12);
+  const customerPwd = await bcrypt.hash('customer123', 12);
 
   const admin = await prisma.user.create({
     data: {
       email: 'admin@goodwillmedical.com',
-      password: adminPassword,
+      password: adminPwd,
       name: 'Admin User',
-      role: 'ADMIN',
+      role: UserRole.ADMIN,
       emailVerified: new Date(),
     },
   });
-  console.log('   ✅ Admin created:', admin.email);
 
   const manager = await prisma.user.create({
     data: {
       email: 'manager@goodwillmedical.com',
-      password: managerPassword,
+      password: managerPwd,
       name: 'Manager User',
-      role: 'MANAGER',
+      role: UserRole.MANAGER,
       emailVerified: new Date(),
     },
   });
-  console.log('   ✅ Manager created:', manager.email);
 
   const customer = await prisma.user.create({
     data: {
       email: 'customer@goodwillmedical.com',
-      password: customerPassword,
+      password: customerPwd,
       name: 'John Customer',
-      role: 'CUSTOMER',
+      role: UserRole.CUSTOMER,
       phone: '(555) 123-4567',
       emailVerified: new Date(),
     },
   });
-  console.log('   ✅ Customer created:', customer.email);
-  console.log('✅ Users created successfully\n');
 
   // Create categories
-  console.log('📁 Creating categories...');
   for (const cat of CATEGORIES) {
     await prisma.category.create({
       data: {
@@ -240,12 +232,9 @@ async function main() {
         order: cat.id,
       },
     });
-    console.log(`   ✅ Created: ${cat.name}`);
   }
-  console.log(`✅ Created ${CATEGORIES.length} categories\n`);
 
   // Create products
-  console.log('📦 Creating products...');
   for (const prod of PRODUCTS) {
     const category = await prisma.category.findUnique({
       where: { slug: prod.categorySlug },
@@ -258,7 +247,7 @@ async function main() {
           name: prod.name,
           slug: prod.slug,
           description: prod.description,
-          shortDescription: prod.description.slice(0, 100) + '...',
+          shortDescription: prod.description.slice(0, 100),
           categoryId: category.id,
           brand: prod.brand,
           price: prod.price,
@@ -269,49 +258,58 @@ async function main() {
           deliveryEstimate: prod.deliveryEstimate,
           warranty: prod.warranty,
           isFeatured: prod.id <= 4,
-          isNew: prod.id > 6,
-          tags: [prod.categorySlug, prod.brand.toLowerCase().replace(' ', '-')],
+          tags: [prod.categorySlug],
           features: prod.features,
           images: {
-            create: [
-              {
-                url: prod.image,
-                alt: prod.name,
-                order: 0,
-              },
-            ],
+            create: [{ url: prod.image, alt: prod.name, order: 0 }],
           },
         },
       });
-      console.log(`   ✅ Created: ${prod.name}`);
     }
   }
-  console.log(`✅ Created ${PRODUCTS.length} products\n`);
 
   // Create sample order
-  console.log('📋 Creating sample order...');
   const product1 = PRODUCTS[0];
   const product2 = PRODUCTS[5];
-
+  
   const dbProduct1 = await prisma.product.findFirst({ where: { name: product1.name } });
   const dbProduct2 = await prisma.product.findFirst({ where: { name: product2.name } });
 
   if (dbProduct1 && dbProduct2) {
+    // First create the address
+    const address = await prisma.address.create({
+      data: {
+        userId: customer.id,
+        type: AddressType.SHIPPING,
+        firstName: 'John',
+        lastName: 'Customer',
+        address1: '123 Main Street',
+        city: 'Chicago',
+        state: 'IL',
+        postalCode: '60601',
+        country: 'US',
+        phone: '(555) 123-4567',
+        isDefault: true,
+      },
+    });
+
+    // Then create the order with the address ID
     await prisma.order.create({
       data: {
         orderNumber: `ORD-${Date.now()}`,
         userId: customer.id,
         email: customer.email,
-        status: 'DELIVERED',
-        paymentStatus: 'PAID',
+        status: OrderStatus.DELIVERED,
+        paymentStatus: PaymentStatus.PAID,
         subtotal: 349.98,
-        tax: 28.00,
+        tax: 28,
         shippingCost: 0,
         total: 377.98,
         paymentMethod: 'Credit Card',
         stripePaymentId: 'pi_sample123456',
         carrier: 'FedEx',
         trackingNumber: '789012345678',
+        shippingAddressId: address.id, // ✅ Use the created address ID
         items: {
           create: [
             {
@@ -330,28 +328,11 @@ async function main() {
             },
           ],
         },
-        shippingAddress: {
-          create: {
-            userId: customer.id,
-            type: AddressType.SHIPPING, // ✅ FIXED: Using enum from Prisma
-            firstName: 'John',
-            lastName: 'Customer',
-            address1: '123 Main Street',
-            city: 'Chicago',
-            state: 'IL',
-            postalCode: '60601',
-            country: 'US',
-            phone: '(555) 123-4567',
-            isDefault: true,
-          },
-        },
       },
     });
-    console.log('   ✅ Sample order created');
   }
 
   // Create wishlist item
-  console.log('❤️ Creating wishlist item...');
   const wishlistProduct = PRODUCTS[1];
   const dbWishlistProduct = await prisma.product.findFirst({ where: { name: wishlistProduct.name } });
   if (dbWishlistProduct) {
@@ -361,11 +342,9 @@ async function main() {
         productId: dbWishlistProduct.id,
       },
     });
-    console.log('   ✅ Wishlist item created');
   }
 
   // Create review
-  console.log('⭐ Creating product review...');
   const reviewProduct = PRODUCTS[0];
   const dbReviewProduct = await prisma.product.findFirst({ where: { name: reviewProduct.name } });
   if (dbReviewProduct) {
@@ -379,6 +358,7 @@ async function main() {
         verified: true,
       },
     });
+    
     await prisma.product.update({
       where: { id: dbReviewProduct.id },
       data: {
@@ -386,25 +366,17 @@ async function main() {
         reviewCount: { increment: 1 },
       },
     });
-    console.log('   ✅ Review created');
   }
 
-  // Summary
-  console.log('\n🎉 Database seeded successfully!\n');
-  console.log('🔐 Admin Credentials:');
-  console.log('   Email: admin@goodwillmedical.com');
-  console.log('   Password: admin123');
-  console.log('\n🔐 Manager Credentials:');
-  console.log('   Email: manager@goodwillmedical.com');
-  console.log('   Password: manager123');
-  console.log('\n🔐 Customer Credentials:');
-  console.log('   Email: customer@goodwillmedical.com');
-  console.log('   Password: customer123');
+  console.log('✅ Database seeded successfully!');
+  console.log('\n🔐 Admin: admin@goodwillmedical.com / admin123');
+  console.log('🔐 Manager: manager@goodwillmedical.com / manager123');
+  console.log('🔐 Customer: customer@goodwillmedical.com / customer123');
 }
 
 main()
   .catch((e) => {
-    console.error('\n❌ Seeding failed:', e);
+    console.error('❌ Seeding failed:', e);
     process.exit(1);
   })
   .finally(async () => {
