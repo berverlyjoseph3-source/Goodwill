@@ -20,9 +20,14 @@ import { ProductReviews } from '../../components/product/ProductReviews';
 import { RelatedProducts } from '../../components/product/RelatedProducts';
 import { RecentlyViewed } from '../../components/product/RecentlyViewed';
 import { useCartStore } from '../../stores/cartStore';
+import { Product } from '../../types';
 import toast from 'react-hot-toast';
 
-export default function ProductPage({ product }) {
+interface ProductPageProps {
+  product: Product;
+}
+
+export default function ProductPage({ product }: ProductPageProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -36,12 +41,12 @@ export default function ProductPage({ product }) {
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id,
+      id: product.id.toString(), // Convert number to string for cart store
       name: product.name,
       price: product.salePrice || product.price,
       image: product.image,
       quantity: quantity,
-      slug: product.slug
+      inventory: product.inventory // Add inventory field
     });
     toast.success(`${product.name} added to cart`, {
       icon: '🛒',
@@ -53,6 +58,11 @@ export default function ProductPage({ product }) {
     handleAddToCart();
     router.push('/checkout');
   };
+
+  // Prepare images array for gallery
+  const productImages = product.images && product.images.length > 0 
+    ? product.images 
+    : [product.image];
 
   return (
     <div className="bg-white">
@@ -79,7 +89,7 @@ export default function ProductPage({ product }) {
           {/* Left: Gallery */}
           <div>
             <ProductGallery 
-              images={[product.image, ...(product.additionalImages || [])]}
+              images={productImages}
               selectedIndex={selectedImage}
               onSelect={setSelectedImage}
               productName={product.name}
@@ -93,7 +103,7 @@ export default function ProductPage({ product }) {
               <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">
                 {product.name}
               </h1>
-              
+
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className="flex items-center">
@@ -109,9 +119,9 @@ export default function ProductPage({ product }) {
                     {product.reviewCount} reviews
                   </span>
                 </div>
-                
+
                 <span className="text-sm text-slate-400">|</span>
-                
+
                 <span className="text-sm text-slate-600">
                   SKU: {product.sku}
                 </span>
@@ -139,7 +149,7 @@ export default function ProductPage({ product }) {
                   </span>
                 )}
               </div>
-              
+
               <div className="mt-3 flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className={`w-3 h-3 rounded-full ${
@@ -151,7 +161,7 @@ export default function ProductPage({ product }) {
                      product.inventory > 0 ? `Only ${product.inventory} left` : 'Out of Stock'}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center text-sm text-slate-600">
                   <TruckIcon className="w-5 h-5 mr-1" />
                   {product.deliveryEstimate || 'Free shipping'}
@@ -171,7 +181,7 @@ export default function ProductPage({ product }) {
               <div>
                 <h3 className="font-semibold text-slate-900 mb-2">Key Features:</h3>
                 <ul className="list-disc list-inside space-y-1 text-slate-600">
-                  {product.features.map((feature, index) => (
+                  {product.features.map((feature: string, index: number) => (
                     <li key={index}>{feature}</li>
                   ))}
                 </ul>
@@ -220,7 +230,7 @@ export default function ProductPage({ product }) {
                   <ShoppingCartIcon className="w-5 h-5" />
                   <span>Add to Cart</span>
                 </button>
-                
+
                 <button
                   onClick={handleBuyNow}
                   disabled={product.inventory === 0}
@@ -229,7 +239,7 @@ export default function ProductPage({ product }) {
                 >
                   <span>Buy Now</span>
                 </button>
-                
+
                 <button
                   className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                   aria-label="Add to wishlist"
@@ -266,7 +276,7 @@ export default function ProductPage({ product }) {
 
         {/* Product Specifications & Reviews */}
         <div className="mt-16">
-          <ProductReviews productId={product.id} reviews={product.reviews} />
+          <ProductReviews productId={product.id} />
         </div>
 
         {/* Related Products */}
