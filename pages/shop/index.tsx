@@ -10,34 +10,47 @@ import { Pagination } from '../../components/shop/Pagination';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { PRODUCTS } from '../../constants/images'; // IMPORT REAL PRODUCTS!
+import { PRODUCTS } from '../../constants/images';
 
 export default function ShopPage() {
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  
+  // ✅ FIXED: Ensure category is always a string
   const [filters, setFilters] = useState({
-    category: router.query.category || '',
+    category: typeof router.query.category === 'string' ? router.query.category : '',
     priceRange: [0, 5000],
     brand: [] as string[],
     availability: 'all',
     rating: 0
   });
+  
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // USE THE REAL PRODUCTS FROM CONSTANTS!
   const [products, setProducts] = useState(PRODUCTS);
 
-  // Simulate loading
+  // Update filters when router query changes
+  useEffect(() => {
+    if (router.query.category && typeof router.query.category === 'string') {
+      setFilters(prev => ({ ...prev, category: router.query.category as string }));
+    }
+  }, [router.query.category]);
+
+  // Simulate loading with filtering
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => {
-      setProducts(PRODUCTS); // USE REAL PRODUCTS
+      // Filter products based on category if needed
+      let filtered = PRODUCTS;
+      if (filters.category) {
+        filtered = PRODUCTS.filter(p => p.categorySlug === filters.category);
+      }
+      setProducts(filtered);
       setIsLoading(false);
     }, 500);
     return () => clearTimeout(timer);
-  }, [filters, sortBy, currentPage]);
+  }, [filters.category, sortBy, currentPage]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -98,7 +111,7 @@ export default function ShopPage() {
               <SortSelect value={sortBy} onChange={setSortBy} />
             </div>
 
-            {/* Product Grid - NOW WITH REAL IMAGES! */}
+            {/* Product Grid */}
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(8)].map((_, i) => (
