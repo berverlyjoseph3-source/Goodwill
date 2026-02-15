@@ -1,17 +1,20 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { CheckoutForm } from '@/components/checkout/CheckoutForm';
-import { OrderSummary } from '@/components/checkout/OrderSummary';
-import { useCartStore } from '@/stores/cartStore';
+import { ShoppingCartIcon } from '@heroicons/react/24/outline';
+import { CheckoutForm } from '../../components/checkout/CheckoutForm';
+import { OrderSummary } from '../../components/checkout/OrderSummary';
+import { StepIndicator } from '../../components/checkout/StepIndicator';
+import { useCartStore } from '../../stores/cartStore';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutPage() {
-  const [step, setStep] = useState < 'information' | 'shipping' | 'payment' > ('information');
+  const [step, setStep] = useState<'information' | 'shipping' | 'payment'>('information');
   const cartItems = useCartStore((state) => state.items);
   const subtotal = useCartStore((state) => state.subtotal);
-  
+
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-soft-gray flex items-center justify-center">
@@ -26,7 +29,7 @@ export default function CheckoutPage() {
       </div>
     );
   }
-  
+
   return (
     <div className="min-h-screen bg-soft-gray">
       <div className="container-padding py-8">
