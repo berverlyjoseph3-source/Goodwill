@@ -109,11 +109,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(405).json({ error: 'Method not allowed' });
     
-  } catch (error) {
+  } catch (error: any) { // ✅ FIXED: Added type 'any' to error
     console.error('API Error:', error);
     return res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message 
+      message: error.message || 'Unknown error occurred'
     });
   }
 }
