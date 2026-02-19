@@ -11,8 +11,9 @@ import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
+// Match the ProductGrid expected type
 interface Product {
-  id: string;
+  id: number; // Note: number, not string
   name: string;
   slug: string;
   price: number;
@@ -24,6 +25,10 @@ interface Product {
   rating: number;
   reviewCount: number;
   inventory: number;
+  description?: string;
+  deliveryEstimate?: string;
+  warranty?: string;
+  sku?: string;
 }
 
 export default function ShopPage() {
@@ -65,7 +70,27 @@ export default function ShopPage() {
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
         
-        setProducts(data.products || []);
+        // Transform API response to match Product interface
+        const transformedProducts = (data.products || []).map((p: any) => ({
+          id: parseInt(p.id) || Math.floor(Math.random() * 10000), // Convert string ID to number
+          name: p.name,
+          slug: p.slug,
+          price: p.price,
+          salePrice: p.salePrice,
+          image: p.image || '/images/placeholder.jpg',
+          category: p.category?.name || p.category || 'Uncategorized',
+          categorySlug: p.categorySlug || '',
+          brand: p.brand || 'Goodwill Medical',
+          rating: p.rating || 0,
+          reviewCount: p.reviewCount || 0,
+          inventory: p.inventory || 0,
+          description: p.description,
+          deliveryEstimate: p.deliveryEstimate,
+          warranty: p.warranty,
+          sku: p.sku
+        }));
+        
+        setProducts(transformedProducts);
         setTotalCount(data.pagination?.total || 0);
         setTotalPages(data.pagination?.totalPages || 1);
       } catch (error) {
