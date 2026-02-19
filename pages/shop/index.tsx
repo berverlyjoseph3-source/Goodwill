@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { GetServerSideProps } from 'next';
 import { prisma } from '../../lib/prisma';
-import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images'; // ✅ ADD THIS IMPORT
+import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images';
 
 // Define interface matching what ProductGrid expects
 interface Product {
