@@ -45,6 +45,7 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
   const [isLoading, setIsLoading] = useState(false);
   const [totalCount, setTotalCount] = useState(initialTotal);
   const [totalPages, setTotalPages] = useState(1);
+  const [isClient, setIsClient] = useState(false);
 
   const [filters, setFilters] = useState({
     category: typeof router.query.category === 'string' ? router.query.category : '',
@@ -56,6 +57,11 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Fix hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Fetch products from API when filters change
   useEffect(() => {
@@ -113,6 +119,19 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
       setFilters(prev => ({ ...prev, category: router.query.category as string }));
     }
   }, [router.query.category]);
+
+  // Don't render until client-side to prevent flash
+  if (!isClient) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="container-padding max-w-7xl mx-auto py-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
