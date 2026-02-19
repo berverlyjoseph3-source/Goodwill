@@ -9,8 +9,8 @@ import { QuickViewModal } from './QuickViewModal';
 import toast from 'react-hot-toast';
 
 interface Product {
-  id: number;  // Keep as number for grid
-  id_str?: string; // Optional string version for modal
+  id: number;
+  id_str?: string;
   name: string;
   slug: string;
   price: number;
@@ -32,8 +32,8 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
-  // Fix hydration mismatch
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -63,18 +63,19 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
     });
   };
 
-  // Prepare product for modal with string id
   const handleQuickView = (product: Product) => {
-    // Convert id to string for modal compatibility
     const productForModal = {
       ...product,
       id_str: product.id.toString(),
-      id: product.id.toString() // Override for modal
+      id: product.id.toString()
     };
     setQuickViewProduct(productForModal as any);
   };
 
-  // Don't render until client-side to prevent flash
+  const handleImageError = (productId: number) => {
+    setFailedImages(prev => new Set(prev).add(productId));
+  };
+
   if (!isClient) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -111,7 +112,6 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
             onMouseEnter={() => setHoveredProduct(product.id.toString())}
             onMouseLeave={() => setHoveredProduct(null)}
           >
-            {/* Wishlist Button */}
             <button
               onClick={(e) => toggleWishlist(product.id, e)}
               className="absolute top-3 right-3 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors"
@@ -124,29 +124,32 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
               )}
             </button>
 
-            {/* Product Image */}
             <Link href={`/product/${product.slug}`} className="block relative">
-              <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative">
-                <Image
-                  src={product.image || '/images/placeholder.jpg'}
-                  alt={product.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority={index < 4}
-                  loading={index < 4 ? 'eager' : 'lazy'}
-                />
+              <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative" style={{ minHeight: '200px' }}>
+                {product?.image && !failedImages.has(product.id) ? (
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    priority={index < 4}
+                    onError={() => handleImageError(product.id)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-6xl bg-soft-gray">
+                    🏥
+                  </div>
+                )}
 
-                {/* Sale Badge */}
                 {product.salePrice && (
-                  <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                  <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold z-10">
                     Sale
                   </div>
                 )}
 
-                {/* Quick View Overlay */}
                 {hoveredProduct === product.id.toString() && (
-                  <div className="absolute inset-0 bg-black/5 flex items-end justify-center pb-6 transition-all duration-300">
+                  <div className="absolute inset-0 bg-black/5 flex items-end justify-center pb-6 transition-all duration-300 z-20">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -161,7 +164,6 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
               </div>
             </Link>
 
-            {/* Product Info */}
             <div className="p-4 flex-1 flex flex-col">
               <Link href={`/product/${product.slug}`} className="flex-1">
                 <h3 className="font-semibold text-slate-800 mb-2 group-hover:text-medical-blue transition-colors line-clamp-2">
@@ -169,7 +171,6 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                 </h3>
               </Link>
 
-              {/* Rating */}
               <div className="flex items-center mb-2">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -183,7 +184,6 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                 <span className="text-xs text-slate-500 ml-2">({product.reviewCount})</span>
               </div>
 
-              {/* Price */}
               <div className="flex items-center justify-between mt-2">
                 <div>
                   {product.salePrice ? (
@@ -212,7 +212,6 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                 </button>
               </div>
 
-              {/* Stock Status */}
               {product.inventory < 10 && product.inventory > 0 && (
                 <p className="text-xs text-orange-600 mt-2 flex items-center">
                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1.5"></span>
@@ -231,12 +230,11 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
         ))}
       </div>
 
-      {/* Quick View Modal */}
       {quickViewProduct && (
         <QuickViewModal
           product={{
             ...quickViewProduct,
-            id: quickViewProduct.id_str || quickViewProduct.id.toString() // Ensure string ID
+            id: quickViewProduct.id_str || quickViewProduct.id.toString()
           }}
           isOpen={!!quickViewProduct}
           onClose={() => setQuickViewProduct(null)}
