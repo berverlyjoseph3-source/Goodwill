@@ -14,7 +14,6 @@ import { GetServerSideProps } from 'next';
 import { prisma } from '../../lib/prisma';
 import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images';
 
-// Define interface matching what ProductGrid expects
 interface Product {
   id: number;
   name: string;
@@ -77,7 +76,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
 
-        // Transform API response to match Product interface
         const transformedProducts = (data.products || []).map((p: any) => ({
           id: parseInt(p.id) || 0,
           name: p.name || '',
@@ -110,7 +108,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
     fetchProducts();
   }, [filters, sortBy, currentPage]);
 
-  // Update filters when router query changes
   useEffect(() => {
     if (router.query.category && typeof router.query.category === 'string') {
       setFilters(prev => ({ ...prev, category: router.query.category as string }));
@@ -119,7 +116,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Breadcrumb */}
       <nav className="bg-soft-gray py-3" aria-label="Breadcrumb">
         <div className="container-padding max-w-7xl mx-auto">
           <ol className="flex items-center space-x-2 text-sm">
@@ -132,27 +128,20 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
       <div className="container-padding max-w-7xl mx-auto py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filter Sidebar - Desktop */}
           <aside className="hidden lg:block w-80 flex-shrink-0">
             <div className="sticky top-24">
-              <FilterSidebar 
-                filters={filters} 
-                onFilterChange={setFilters}
-              />
+              <FilterSidebar filters={filters} onFilterChange={setFilters} />
             </div>
           </aside>
 
-          {/* Mobile Filter Button */}
           <button
             onClick={() => setIsFilterOpen(true)}
             className="lg:hidden btn-secondary w-full mb-4 flex items-center justify-center"
-            aria-label="Open filters"
           >
             <AdjustmentsHorizontalIcon className="w-5 h-5 mr-2" />
             Filters
           </button>
 
-          {/* Mobile Filter Drawer */}
           <AnimatePresence>
             {isFilterOpen && (
               <MobileFilterDrawer
@@ -164,9 +153,7 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
             )}
           </AnimatePresence>
 
-          {/* Main Content */}
           <main className="flex-1">
-            {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <p className="text-slate-600 mb-2 sm:mb-0">
                 Showing <span className="font-semibold">{products.length}</span> of 
@@ -175,18 +162,14 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
               <SortSelect value={sortBy} onChange={setSortBy} />
             </div>
 
-            {/* Product Grid */}
             {isLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => (
-                  <ProductSkeleton key={i} />
-                ))}
+                {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
               </div>
             ) : (
               <ProductGrid products={products} />
             )}
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <Pagination 
                 currentPage={currentPage}
@@ -203,59 +186,56 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // Fetch products from database
+    // Get database products
     const dbProducts = await prisma.product.findMany({
       include: {
         category: true,
-        images: {
-          take: 1
-        }
+        images: { take: 1 }
       },
       orderBy: { createdAt: 'desc' }
     });
 
-    // Format database products
-    const formattedDbProducts = dbProducts.map(product => ({
-      id: parseInt(product.id) || 0,
-      name: product.name || '',
-      slug: product.slug || '',
-      sku: product.sku || `SKU-${product.id}`,
-      price: product.price.toNumber(),
-      salePrice: product.salePrice?.toNumber() || null,
-      image: product.images[0]?.url || '/images/placeholder.jpg',
-      category: product.category?.name || 'Uncategorized',
-      categorySlug: product.category?.slug || '',
-      brand: product.brand || 'Goodwill Medical',
-      rating: product.rating || 0,
-      reviewCount: product.reviewCount || 0,
-      inventory: product.inventory || 0,
-      description: product.description || '',
-      deliveryEstimate: product.deliveryEstimate || '2-3 business days',
-      warranty: product.warranty || '1 year'
+    const formattedDb = dbProducts.map(p => ({
+      id: parseInt(p.id) || 0,
+      name: p.name || '',
+      slug: p.slug || '',
+      sku: p.sku || `SKU-${p.id}`,
+      price: p.price.toNumber(),
+      salePrice: p.salePrice?.toNumber() || null,
+      image: p.images[0]?.url || '/images/placeholder.jpg',
+      category: p.category?.name || 'Uncategorized',
+      categorySlug: p.category?.slug || '',
+      brand: p.brand || 'Goodwill Medical',
+      rating: p.rating || 0,
+      reviewCount: p.reviewCount || 0,
+      inventory: p.inventory || 0,
+      description: p.description || '',
+      deliveryEstimate: p.deliveryEstimate || '2-3 business days',
+      warranty: p.warranty || '1 year'
     }));
 
-    // Format static products from constants/images.ts
-    const formattedStaticProducts = STATIC_PRODUCTS.map(product => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      sku: product.sku,
-      price: product.price,
-      salePrice: product.salePrice || undefined,
-      image: product.image,
-      category: product.category,
-      categorySlug: product.categorySlug,
-      brand: product.brand,
-      rating: product.rating,
-      reviewCount: product.reviewCount,
-      inventory: product.inventory,
-      description: product.description,
-      deliveryEstimate: product.deliveryEstimate,
-      warranty: product.warranty
+    // Get static products
+    const formattedStatic = STATIC_PRODUCTS.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      price: p.price,
+      salePrice: p.salePrice,
+      image: p.image,
+      category: p.category,
+      categorySlug: p.categorySlug,
+      brand: p.brand,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      inventory: p.inventory,
+      description: p.description,
+      deliveryEstimate: p.deliveryEstimate,
+      warranty: p.warranty
     }));
 
-    // Combine both sources
-    const allProducts = [...formattedDbProducts, ...formattedStaticProducts];
+    // COMBINE BOTH
+    const allProducts = [...formattedDb, ...formattedStatic];
 
     return {
       props: {
@@ -266,30 +246,30 @@ export const getServerSideProps: GetServerSideProps = async () => {
   } catch (error) {
     console.error('Failed to fetch products:', error);
     
-    // Fallback to static products only
-    const formattedStaticProducts = STATIC_PRODUCTS.map(product => ({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      sku: product.sku,
-      price: product.price,
-      salePrice: product.salePrice || undefined,
-      image: product.image,
-      category: product.category,
-      categorySlug: product.categorySlug,
-      brand: product.brand,
-      rating: product.rating,
-      reviewCount: product.reviewCount,
-      inventory: product.inventory,
-      description: product.description,
-      deliveryEstimate: product.deliveryEstimate,
-      warranty: product.warranty
+    // Fallback to static only
+    const formattedStatic = STATIC_PRODUCTS.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      price: p.price,
+      salePrice: p.salePrice,
+      image: p.image,
+      category: p.category,
+      categorySlug: p.categorySlug,
+      brand: p.brand,
+      rating: p.rating,
+      reviewCount: p.reviewCount,
+      inventory: p.inventory,
+      description: p.description,
+      deliveryEstimate: p.deliveryEstimate,
+      warranty: p.warranty
     }));
 
     return {
       props: {
-        initialProducts: formattedStaticProducts,
-        totalCount: formattedStaticProducts.length
+        initialProducts: formattedStatic,
+        totalCount: formattedStatic.length
       }
     };
   }
