@@ -9,7 +9,8 @@ import { QuickViewModal } from './QuickViewModal';
 import toast from 'react-hot-toast';
 
 interface Product {
-  id: number;
+  id: number;  // Keep as number for grid
+  id_str?: string; // Optional string version for modal
   name: string;
   slug: string;
   price: number;
@@ -60,6 +61,17 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
       icon: '🛒',
       duration: 3000,
     });
+  };
+
+  // Prepare product for modal with string id
+  const handleQuickView = (product: Product) => {
+    // Convert id to string for modal compatibility
+    const productForModal = {
+      ...product,
+      id_str: product.id.toString(),
+      id: product.id.toString() // Override for modal
+    };
+    setQuickViewProduct(productForModal as any);
   };
 
   // Don't render until client-side to prevent flash
@@ -121,7 +133,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  priority={index < 4} // First 4 images load immediately
+                  priority={index < 4}
                   loading={index < 4 ? 'eager' : 'lazy'}
                 />
 
@@ -138,7 +150,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        setQuickViewProduct(product);
+                        handleQuickView(product);
                       }}
                       className="bg-white text-slate-900 px-6 py-2 rounded-lg font-medium text-sm shadow-lg hover:bg-medical-blue hover:text-white transition-colors"
                     >
@@ -222,7 +234,10 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
       {/* Quick View Modal */}
       {quickViewProduct && (
         <QuickViewModal
-          product={quickViewProduct}
+          product={{
+            ...quickViewProduct,
+            id: quickViewProduct.id_str || quickViewProduct.id.toString() // Ensure string ID
+          }}
           isOpen={!!quickViewProduct}
           onClose={() => setQuickViewProduct(null)}
         />
