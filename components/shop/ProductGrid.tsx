@@ -1,18 +1,41 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { ShoppingCartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { QuickViewModal } from './QuickViewModal';
 import toast from 'react-hot-toast';
-import { PRODUCTS } from '../../constants/images';
 
-export const ProductGrid = ({ products = PRODUCTS }) => {
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  price: number;
+  salePrice?: number;
+  image: string;
+  rating: number;
+  reviewCount: number;
+  inventory: number;
+  category?: string;
+  brand?: string;
+}
+
+interface ProductGridProps {
+  products?: Product[];
+}
+
+export const ProductGrid = ({ products = [] }: ProductGridProps) => {
   const [wishlist, setWishlist] = useState<string[]>([]);
-  const [quickViewProduct, setQuickViewProduct] = useState<any>(null);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Fix hydration mismatch
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const toggleWishlist = (productId: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -30,7 +53,7 @@ export const ProductGrid = ({ products = PRODUCTS }) => {
     );
   };
 
-  const handleAddToCart = (product: any, e: React.MouseEvent) => {
+  const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     toast.success(`${product.name} added to cart`, {
@@ -39,10 +62,37 @@ export const ProductGrid = ({ products = PRODUCTS }) => {
     });
   };
 
+  // Don't render until client-side to prevent flash
+  if (!isClient) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[...Array(8)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl shadow-sm p-4 animate-pulse">
+            <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+            <div className="flex justify-between items-center">
+              <div className="h-6 bg-gray-200 rounded w-20"></div>
+              <div className="h-8 bg-gray-200 rounded w-24"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!products || products.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-600">No products found.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <div
             key={product.id}
             className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 relative flex flex-col"
@@ -66,20 +116,22 @@ export const ProductGrid = ({ products = PRODUCTS }) => {
             <Link href={`/product/${product.slug}`} className="block relative">
               <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative">
                 <Image
-                  src={product.image}
+                  src={product.image || '/images/placeholder.jpg'}
                   alt={product.name}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority={index < 4} // First 4 images load immediately
+                  loading={index < 4 ? 'eager' : 'lazy'}
                 />
-                
+
                 {/* Sale Badge */}
                 {product.salePrice && (
                   <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
                     Sale
                   </div>
                 )}
-                
+
                 {/* Quick View Overlay */}
                 {hoveredProduct === product.id.toString() && (
                   <div className="absolute inset-0 bg-black/5 flex items-end justify-center pb-6 transition-all duration-300">
@@ -137,7 +189,7 @@ export const ProductGrid = ({ products = PRODUCTS }) => {
                     </span>
                   )}
                 </div>
-                
+
                 <button
                   onClick={(e) => handleAddToCart(product, e)}
                   disabled={product.inventory === 0}
@@ -155,7 +207,7 @@ export const ProductGrid = ({ products = PRODUCTS }) => {
                   Only {product.inventory} left in stock
                 </p>
               )}
-              
+
               {product.inventory === 0 && (
                 <p className="text-xs text-red-600 mt-2 flex items-center">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5"></span>
