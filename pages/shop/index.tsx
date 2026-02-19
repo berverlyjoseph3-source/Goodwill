@@ -10,6 +10,8 @@ import { Pagination } from '../../components/shop/Pagination';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { GetServerSideProps } from 'next';
+import { prisma } from '../../lib/prisma';
 
 // Define interface matching what ProductGrid expects
 interface Product {
@@ -31,12 +33,17 @@ interface Product {
   warranty: string;
 }
 
-export default function ShopPage() {
+interface ShopPageProps {
+  initialProducts: Product[];
+  totalCount: number;
+}
+
+export default function ShopPage({ initialProducts, totalCount: initialTotal }: ShopPageProps) {
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(initialTotal);
   const [totalPages, setTotalPages] = useState(1);
 
   const [filters, setFilters] = useState({
@@ -50,7 +57,7 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch products from API
+  // Fetch products from API when filters change
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -68,7 +75,7 @@ export default function ShopPage() {
 
         const response = await fetch(`/api/products?${params.toString()}`);
         const data = await response.json();
-        
+
         // Transform API response to match Product interface
         const transformedProducts = (data.products || []).map((p: any) => ({
           id: parseInt(p.id) || 0,
@@ -88,7 +95,7 @@ export default function ShopPage() {
           deliveryEstimate: p.deliveryEstimate || '2-3 business days',
           warranty: p.warranty || '1 year'
         }));
-        
+
         setProducts(transformedProducts);
         setTotalCount(data.pagination?.total || 0);
         setTotalPages(data.pagination?.totalPages || 1);
@@ -192,3 +199,53 @@ export default function ShopPage() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  try {
+    // Fetch products directly from database
+    const products = await prisma.product.findMany({
+      include: {
+        category: true,
+        images: {
+          take: 1
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // Format products for frontend
+    const formattedProducts = products.map(product => ({
+      id: parseInt(product.id) || 0,
+      name: product.name || '',
+      slug: product.slug || '',
+      sku: product.sku || `SKU-${product.id}`,
+      price: product.price.toNumber(),
+      salePrice: product.salePrice?.toNumber() || null,
+      image: product.images[0]?.url || '/images/placeholder.jpg',
+      category: product.category?.name || 'Uncategorized',
+      categorySlug: product.category?.slug || '',
+      brand: product.brand || 'Goodwill Medical',
+      rating: product.rating || 0,
+      reviewCount: product.reviewCount || 0,
+      inventory: product.inventory || 0,
+      description: product.description || '',
+      deliveryEstimate: product.deliveryEstimate || '2-3 business days',
+      warranty: product.warranty || '1 year'
+    }));
+
+    return {
+      props: {
+        initialProducts: formattedProducts,
+        totalCount: products.length
+      }
+    };
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    return {
+      props: {
+        initialProducts: [],
+        totalCount: 0
+      }
+    };
+  }
+};
