@@ -4,8 +4,10 @@ import Image from 'next/image';
 import { 
   XMarkIcon, 
   PlusIcon,
-  ArrowUpTrayIcon 
+  ArrowUpTrayIcon,
+  CloudArrowUpIcon
 } from '@heroicons/react/24/outline';
+import toast from 'react-hot-toast';
 
 interface ProductFormProps {
   categories: any[];
@@ -14,7 +16,6 @@ interface ProductFormProps {
   isSubmitting: boolean;
 }
 
-// Define types for specifications
 interface Specification {
   name: string;
   value: string;
@@ -27,6 +28,8 @@ export const ProductForm = ({
   isSubmitting 
 }: ProductFormProps) => {
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
+  
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     slug: initialData?.slug || '',
@@ -91,13 +94,48 @@ export const ProductForm = ({
     setSpecifications(newSpecs);
   };
 
+  // ✅ NEW: Upload images to Cloudinary
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // In production, upload to cloud storage and get URLs
-    // For now, create object URLs
-    const newImages = files.map((file: File) => URL.createObjectURL(file));
-    setImages([...images, ...newImages]);
+    setIsUploading(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of files) {
+        // Convert file to base64
+        const reader = new FileReader();
+        const base64 = await new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        // Upload to Cloudinary
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64 })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          uploadedUrls.push(data.url);
+          toast.success(`Uploaded: ${file.name}`);
+        } else {
+          toast.error(`Failed to upload: ${file.name}`);
+        }
+      }
+
+      setImages([...images, ...uploadedUrls]);
+    } catch (error) {
+      toast.error('Image upload failed');
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -115,7 +153,7 @@ export const ProductForm = ({
       tags: formData.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
       features: features.filter((f: string) => f.trim()),
       specifications: specifications.filter((s: Specification) => s.name && s.value),
-      images,
+      images, // These are now real Cloudinary URLs!
     });
   };
 
@@ -426,11 +464,19 @@ export const ProductForm = ({
         </div>
       </div>
 
-      {/* Product Images */}
+      {/* Product Images - NOW WITH CLOUDINARY UPLOAD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">
-          Product Images
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Product Images
+          </h2>
+          {isUploading && (
+            <div className="flex items-center text-medical-blue">
+              <CloudArrowUpIcon className="w-5 h-5 animate-pulse mr-2" />
+              <span className="text-sm">Uploading...</span>
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {images.map((image: string, index: number) => (
@@ -452,20 +498,27 @@ export const ProductForm = ({
             </div>
           ))}
 
-          <label className="aspect-square bg-soft-gray border-2 border-dashed border-gray-300 
+          <label className={`aspect-square bg-soft-gray border-2 border-dashed border-gray-300 
                           rounded-lg flex flex-col items-center justify-center cursor-pointer
-                          hover:border-medical-blue hover:bg-medical-blue/5 transition-colors">
+                          hover:border-medical-blue hover:bg-medical-blue/5 transition-colors
+                          ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
             <ArrowUpTrayIcon className="w-6 h-6 text-slate-400 mb-1" />
-            <span className="text-xs text-slate-600">Upload</span>
+            <span className="text-xs text-slate-600">
+              {isUploading ? 'Uploading...' : 'Upload'}
+            </span>
             <input
               type="file"
               accept="image/*"
               multiple
               onChange={handleImageUpload}
+              disabled={isUploading}
               className="hidden"
             />
           </label>
         </div>
+        <p className="text-xs text-slate-500 mt-2">
+          Images are uploaded to Cloudinary and will be permanently stored
+        </p>
       </div>
 
       {/* Shipping & Warranty */}
@@ -554,13 +607,18 @@ export const ProductForm = ({
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="px-6 py-2 btn-primary"
+          disabled={isSubmitting || isUploading}
+          className="px-6 py-2 btn-primary disabled:opacity-50"
         >
           {isSubmitting ? (
             <div className="flex items-center">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
               Saving...
+            </div>
+          ) : isUploading ? (
+            <div className="flex items-center">
+              <CloudArrowUpIcon className="w-4 h-4 animate-pulse mr-2" />
+              Uploading Images...
             </div>
           ) : (
             'Save Product'
