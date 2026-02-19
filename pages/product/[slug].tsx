@@ -84,6 +84,12 @@ export default function ProductPage({ product }: ProductPageProps) {
     toast.success(`${product.name} added to cart`);
   };
 
+  // ✅ ADD THIS MISSING FUNCTION
+  const handleBuyNow = () => {
+    handleAddToCart();
+    router.push('/checkout');
+  };
+
   const productImages = product.images?.length ? product.images : [product.image || '/images/placeholder.jpg'];
 
   return (
