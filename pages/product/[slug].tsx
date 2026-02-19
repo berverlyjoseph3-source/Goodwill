@@ -84,7 +84,6 @@ export default function ProductPage({ product }: ProductPageProps) {
     toast.success(`${product.name} added to cart`);
   };
 
-  // ✅ ADD THIS MISSING FUNCTION
   const handleBuyNow = () => {
     handleAddToCart();
     router.push('/checkout');
@@ -225,7 +224,8 @@ export default function ProductPage({ product }: ProductPageProps) {
 
         {/* Reviews & Related */}
         <div className="mt-16">
-          <ProductReviews productId={product.id} />
+          {/* ✅ FIXED: Convert string ID to number */}
+          <ProductReviews productId={parseInt(product.id)} />
         </div>
         <div className="mt-16">
           <RelatedProducts category={product.categorySlug} currentProductId={product.id} />
