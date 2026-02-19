@@ -11,11 +11,12 @@ import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
-// Match the ProductGrid expected type
+// Define interface matching what ProductGrid expects
 interface Product {
-  id: number; // Note: number, not string
+  id: number;
   name: string;
   slug: string;
+  sku: string;
   price: number;
   salePrice?: number;
   image: string;
@@ -25,10 +26,9 @@ interface Product {
   rating: number;
   reviewCount: number;
   inventory: number;
-  description?: string;
-  deliveryEstimate?: string;
-  warranty?: string;
-  sku?: string;
+  description: string;
+  deliveryEstimate: string;
+  warranty: string;
 }
 
 export default function ShopPage() {
@@ -55,7 +55,6 @@ export default function ShopPage() {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        // Build query string from filters
         const params = new URLSearchParams();
         if (filters.category) params.append('category', filters.category);
         if (filters.priceRange[0] > 0) params.append('minPrice', filters.priceRange[0].toString());
@@ -72,10 +71,11 @@ export default function ShopPage() {
         
         // Transform API response to match Product interface
         const transformedProducts = (data.products || []).map((p: any) => ({
-          id: parseInt(p.id) || Math.floor(Math.random() * 10000), // Convert string ID to number
-          name: p.name,
-          slug: p.slug,
-          price: p.price,
+          id: parseInt(p.id) || 0,
+          name: p.name || '',
+          slug: p.slug || '',
+          sku: p.sku || `SKU-${p.id}`,
+          price: p.price || 0,
           salePrice: p.salePrice,
           image: p.image || '/images/placeholder.jpg',
           category: p.category?.name || p.category || 'Uncategorized',
@@ -84,10 +84,9 @@ export default function ShopPage() {
           rating: p.rating || 0,
           reviewCount: p.reviewCount || 0,
           inventory: p.inventory || 0,
-          description: p.description,
-          deliveryEstimate: p.deliveryEstimate,
-          warranty: p.warranty,
-          sku: p.sku
+          description: p.description || '',
+          deliveryEstimate: p.deliveryEstimate || '2-3 business days',
+          warranty: p.warranty || '1 year'
         }));
         
         setProducts(transformedProducts);
