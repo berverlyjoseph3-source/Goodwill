@@ -29,7 +29,7 @@ export const ProductForm = ({
 }: ProductFormProps) => {
   const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: initialData?.name || '',
     slug: initialData?.slug || '',
@@ -94,7 +94,7 @@ export const ProductForm = ({
     setSpecifications(newSpecs);
   };
 
-  // ✅ NEW: Upload images to Cloudinary
+  // ✅ UPDATED: Direct Cloudinary upload with upload preset
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -104,25 +104,22 @@ export const ProductForm = ({
 
     try {
       for (const file of files) {
-        // Convert file to base64
-        const reader = new FileReader();
-        const base64 = await new Promise<string>((resolve, reject) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-
-        // Upload to Cloudinary
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: base64 })
-        });
-
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'goodwill_products'); // Create this in Cloudinary
+        
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+        
         const data = await response.json();
         
-        if (data.success) {
-          uploadedUrls.push(data.url);
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
           toast.success(`Uploaded: ${file.name}`);
         } else {
           toast.error(`Failed to upload: ${file.name}`);
@@ -130,6 +127,7 @@ export const ProductForm = ({
       }
 
       setImages([...images, ...uploadedUrls]);
+      toast.success('Images uploaded to Cloudinary!');
     } catch (error) {
       toast.error('Image upload failed');
       console.error('Upload error:', error);
@@ -153,10 +151,11 @@ export const ProductForm = ({
       tags: formData.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean),
       features: features.filter((f: string) => f.trim()),
       specifications: specifications.filter((s: Specification) => s.name && s.value),
-      images, // These are now real Cloudinary URLs!
+      images,
     });
   };
 
+  // Rest of the component remains exactly the same...
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Basic Information */}
@@ -464,7 +463,7 @@ export const ProductForm = ({
         </div>
       </div>
 
-      {/* Product Images - NOW WITH CLOUDINARY UPLOAD */}
+      {/* Product Images - WITH CLOUDINARY UPLOAD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -473,7 +472,7 @@ export const ProductForm = ({
           {isUploading && (
             <div className="flex items-center text-medical-blue">
               <CloudArrowUpIcon className="w-5 h-5 animate-pulse mr-2" />
-              <span className="text-sm">Uploading...</span>
+              <span className="text-sm">Uploading to Cloudinary...</span>
             </div>
           )}
         </div>
@@ -517,7 +516,7 @@ export const ProductForm = ({
           </label>
         </div>
         <p className="text-xs text-slate-500 mt-2">
-          Images are uploaded to Cloudinary and will be permanently stored
+          Images are uploaded directly to Cloudinary and will be permanently stored
         </p>
       </div>
 
