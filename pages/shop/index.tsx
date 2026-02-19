@@ -10,13 +10,30 @@ import { Pagination } from '../../components/shop/Pagination';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { PRODUCTS } from '../../constants/images';
+
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  salePrice?: number;
+  image: string;
+  category: string;
+  categorySlug: string;
+  brand: string;
+  rating: number;
+  reviewCount: number;
+  inventory: number;
+}
 
 export default function ShopPage() {
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  
-  // ✅ FIXED: Ensure category is always a string
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [filters, setFilters] = useState({
     category: typeof router.query.category === 'string' ? router.query.category : '',
     priceRange: [0, 5000],
@@ -24,11 +41,42 @@ export default function ShopPage() {
     availability: 'all',
     rating: 0
   });
-  
+
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [products, setProducts] = useState(PRODUCTS);
+
+  // Fetch products from API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        // Build query string from filters
+        const params = new URLSearchParams();
+        if (filters.category) params.append('category', filters.category);
+        if (filters.priceRange[0] > 0) params.append('minPrice', filters.priceRange[0].toString());
+        if (filters.priceRange[1] < 5000) params.append('maxPrice', filters.priceRange[1].toString());
+        if (filters.brand.length > 0) params.append('brand', filters.brand.join(','));
+        if (filters.availability !== 'all') params.append('availability', filters.availability);
+        if (filters.rating > 0) params.append('rating', filters.rating.toString());
+        params.append('sort', sortBy);
+        params.append('page', currentPage.toString());
+        params.append('limit', '12');
+
+        const response = await fetch(`/api/products?${params.toString()}`);
+        const data = await response.json();
+        
+        setProducts(data.products || []);
+        setTotalCount(data.pagination?.total || 0);
+        setTotalPages(data.pagination?.totalPages || 1);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [filters, sortBy, currentPage]);
 
   // Update filters when router query changes
   useEffect(() => {
@@ -36,21 +84,6 @@ export default function ShopPage() {
       setFilters(prev => ({ ...prev, category: router.query.category as string }));
     }
   }, [router.query.category]);
-
-  // Simulate loading with filtering
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      // Filter products based on category if needed
-      let filtered = PRODUCTS;
-      if (filters.category) {
-        filtered = PRODUCTS.filter(p => p.categorySlug === filters.category);
-      }
-      setProducts(filtered);
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [filters.category, sortBy, currentPage]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -104,9 +137,8 @@ export default function ShopPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
               <p className="text-slate-600 mb-2 sm:mb-0">
-                Showing <span className="font-semibold">1</span> - 
-                <span className="font-semibold"> {products.length}</span> of 
-                <span className="font-semibold"> {products.length}</span> products
+                Showing <span className="font-semibold">{products.length}</span> of 
+                <span className="font-semibold"> {totalCount}</span> products
               </p>
               <SortSelect value={sortBy} onChange={setSortBy} />
             </div>
@@ -123,11 +155,13 @@ export default function ShopPage() {
             )}
 
             {/* Pagination */}
-            <Pagination 
-              currentPage={currentPage}
-              totalPages={3}
-              onPageChange={setCurrentPage}
-            />
+            {totalPages > 1 && (
+              <Pagination 
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
           </main>
         </div>
       </div>
