@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { GetServerSideProps } from 'next';
 import { prisma } from '../../lib/prisma';
+import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images'; // ✅ ADD THIS IMPORT
 
 // Define interface matching what ProductGrid expects
 interface Product {
@@ -202,8 +203,8 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // Fetch products directly from database
-    const products = await prisma.product.findMany({
+    // Fetch products from database
+    const dbProducts = await prisma.product.findMany({
       include: {
         category: true,
         images: {
@@ -213,8 +214,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
       orderBy: { createdAt: 'desc' }
     });
 
-    // Format products for frontend
-    const formattedProducts = products.map(product => ({
+    // Format database products
+    const formattedDbProducts = dbProducts.map(product => ({
       id: parseInt(product.id) || 0,
       name: product.name || '',
       slug: product.slug || '',
@@ -233,18 +234,62 @@ export const getServerSideProps: GetServerSideProps = async () => {
       warranty: product.warranty || '1 year'
     }));
 
+    // Format static products from constants/images.ts
+    const formattedStaticProducts = STATIC_PRODUCTS.map(product => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      price: product.price,
+      salePrice: product.salePrice || undefined,
+      image: product.image,
+      category: product.category,
+      categorySlug: product.categorySlug,
+      brand: product.brand,
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+      inventory: product.inventory,
+      description: product.description,
+      deliveryEstimate: product.deliveryEstimate,
+      warranty: product.warranty
+    }));
+
+    // Combine both sources
+    const allProducts = [...formattedDbProducts, ...formattedStaticProducts];
+
     return {
       props: {
-        initialProducts: formattedProducts,
-        totalCount: products.length
+        initialProducts: allProducts,
+        totalCount: allProducts.length
       }
     };
   } catch (error) {
     console.error('Failed to fetch products:', error);
+    
+    // Fallback to static products only
+    const formattedStaticProducts = STATIC_PRODUCTS.map(product => ({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      price: product.price,
+      salePrice: product.salePrice || undefined,
+      image: product.image,
+      category: product.category,
+      categorySlug: product.categorySlug,
+      brand: product.brand,
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+      inventory: product.inventory,
+      description: product.description,
+      deliveryEstimate: product.deliveryEstimate,
+      warranty: product.warranty
+    }));
+
     return {
       props: {
-        initialProducts: [],
-        totalCount: 0
+        initialProducts: formattedStaticProducts,
+        totalCount: formattedStaticProducts.length
       }
     };
   }
