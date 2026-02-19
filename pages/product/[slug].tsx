@@ -1,9 +1,8 @@
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
 import { 
   StarIcon, 
   ShoppingCartIcon, 
@@ -14,17 +13,36 @@ import {
   ChevronRightIcon 
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
-import { PRODUCTS } from '../../constants/images';
 import { ProductGallery } from '../../components/product/ProductGallery';
 import { ProductReviews } from '../../components/product/ProductReviews';
 import { RelatedProducts } from '../../components/product/RelatedProducts';
 import { RecentlyViewed } from '../../components/product/RecentlyViewed';
 import { useCartStore } from '../../stores/cartStore';
-import { Product } from '../../types';
 import toast from 'react-hot-toast';
 
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string;
+  price: number;
+  salePrice?: number;
+  image: string;
+  images?: string[];
+  category: string;
+  categorySlug: string;
+  brand: string;
+  rating: number;
+  reviewCount: number;
+  inventory: number;
+  description: string;
+  features?: string[];
+  deliveryEstimate?: string;
+  warranty?: string;
+}
+
 interface ProductPageProps {
-  product: Product;
+  product: Product | null;
 }
 
 export default function ProductPage({ product }: ProductPageProps) {
@@ -34,35 +52,39 @@ export default function ProductPage({ product }: ProductPageProps) {
   const addToCart = useCartStore((state) => state.addItem);
 
   if (router.isFallback) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medical-blue"></div>
-    </div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-medical-blue" />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-slate-900 mb-4">Product Not Found</h1>
+          <Link href="/shop" className="btn-primary">
+            Back to Shop
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const handleAddToCart = () => {
     addToCart({
-      id: product.id.toString(), // Convert number to string for cart store
+      id: product.id.toString(),
       name: product.name,
       price: product.salePrice || product.price,
-      image: product.image,
+      image: product.image || '/images/placeholder.jpg',
       quantity: quantity,
-      inventory: product.inventory // Add inventory field
+      inventory: product.inventory
     });
-    toast.success(`${product.name} added to cart`, {
-      icon: '🛒',
-      duration: 3000
-    });
+    toast.success(`${product.name} added to cart`);
   };
 
-  const handleBuyNow = () => {
-    handleAddToCart();
-    router.push('/checkout');
-  };
-
-  // Prepare images array for gallery
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
-    : [product.image];
+  const productImages = product.images?.length ? product.images : [product.image || '/images/placeholder.jpg'];
 
   return (
     <div className="bg-white">
@@ -74,10 +96,6 @@ export default function ProductPage({ product }: ProductPageProps) {
             <li><ChevronRightIcon className="w-4 h-4 text-slate-400" /></li>
             <li><Link href="/shop" className="text-slate-600 hover:text-medical-blue">Shop</Link></li>
             <li><ChevronRightIcon className="w-4 h-4 text-slate-400" /></li>
-            <li><Link href={`/category/${product.categorySlug}`} className="text-slate-600 hover:text-medical-blue">
-              {product.category}
-            </Link></li>
-            <li><ChevronRightIcon className="w-4 h-4 text-slate-400" /></li>
             <li className="text-slate-800 font-medium truncate">{product.name}</li>
           </ol>
         </div>
@@ -86,7 +104,7 @@ export default function ProductPage({ product }: ProductPageProps) {
       <div className="container-padding max-w-7xl mx-auto py-8 lg:py-12">
         {/* Main Product Section */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-          {/* Left: Gallery */}
+          {/* Gallery */}
           <div>
             <ProductGallery 
               images={productImages}
@@ -96,14 +114,10 @@ export default function ProductPage({ product }: ProductPageProps) {
             />
           </div>
 
-          {/* Right: Product Info */}
+          {/* Product Info */}
           <div className="space-y-6">
-            {/* Title & Rating */}
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">
-                {product.name}
-              </h1>
-
+              <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">{product.name}</h1>
               <div className="flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className="flex items-center">
@@ -115,16 +129,10 @@ export default function ProductPage({ product }: ProductPageProps) {
                       )
                     ))}
                   </div>
-                  <span className="ml-2 text-sm text-slate-600">
-                    {product.reviewCount} reviews
-                  </span>
+                  <span className="ml-2 text-sm text-slate-600">{product.reviewCount} reviews</span>
                 </div>
-
                 <span className="text-sm text-slate-400">|</span>
-
-                <span className="text-sm text-slate-600">
-                  SKU: {product.sku}
-                </span>
+                <span className="text-sm text-slate-600">SKU: {product.sku}</span>
               </div>
             </div>
 
@@ -133,23 +141,14 @@ export default function ProductPage({ product }: ProductPageProps) {
               <div className="flex items-baseline space-x-3">
                 {product.salePrice ? (
                   <>
-                    <span className="text-3xl font-bold text-medical-blue">
-                      ${product.salePrice}
-                    </span>
-                    <span className="text-lg text-slate-400 line-through">
-                      ${product.price}
-                    </span>
-                    <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-semibold">
-                      Save ${(product.price - product.salePrice).toFixed(2)}
-                    </span>
+                    <span className="text-3xl font-bold text-medical-blue">${product.salePrice}</span>
+                    <span className="text-lg text-slate-400 line-through">${product.price}</span>
                   </>
                 ) : (
-                  <span className="text-3xl font-bold text-slate-900">
-                    ${product.price}
-                  </span>
+                  <span className="text-3xl font-bold text-slate-900">${product.price}</span>
                 )}
               </div>
-
+              
               <div className="mt-3 flex items-center space-x-4">
                 <div className="flex items-center">
                   <div className={`w-3 h-3 rounded-full ${
@@ -161,7 +160,6 @@ export default function ProductPage({ product }: ProductPageProps) {
                      product.inventory > 0 ? `Only ${product.inventory} left` : 'Out of Stock'}
                   </span>
                 </div>
-
                 <div className="flex items-center text-sm text-slate-600">
                   <TruckIcon className="w-5 h-5 mr-1" />
                   {product.deliveryEstimate || 'Free shipping'}
@@ -170,80 +168,32 @@ export default function ProductPage({ product }: ProductPageProps) {
             </div>
 
             {/* Description */}
-            <div>
-              <p className="text-slate-600 leading-relaxed">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Features */}
-            {product.features && product.features.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-slate-900 mb-2">Key Features:</h3>
-                <ul className="list-disc list-inside space-y-1 text-slate-600">
-                  {product.features.map((feature: string, index: number) => (
-                    <li key={index}>{feature}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <p className="text-slate-600 leading-relaxed">{product.description}</p>
 
             {/* Quantity & Actions */}
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <label htmlFor="quantity" className="font-medium text-slate-700">
-                  Quantity:
-                </label>
+                <label htmlFor="quantity" className="font-medium text-slate-700">Quantity:</label>
                 <div className="flex items-center border border-gray-300 rounded-lg">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="px-3 py-2 hover:bg-gray-50 transition-colors"
-                    aria-label="Decrease quantity"
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    id="quantity"
-                    min="1"
-                    max={product.inventory}
-                    value={quantity}
+                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 hover:bg-gray-50">-</button>
+                  <input type="number" min="1" max={product.inventory} value={quantity}
                     onChange={(e) => setQuantity(Math.min(product.inventory, parseInt(e.target.value) || 1))}
-                    className="w-16 text-center border-x border-gray-300 py-2 focus:outline-none"
-                  />
-                  <button
-                    onClick={() => setQuantity(Math.min(product.inventory, quantity + 1))}
-                    className="px-3 py-2 hover:bg-gray-50 transition-colors"
-                    aria-label="Increase quantity"
-                  >
-                    +
-                  </button>
+                    className="w-16 text-center border-x border-gray-300 py-2 focus:outline-none" />
+                  <button onClick={() => setQuantity(Math.min(product.inventory, quantity + 1))} className="px-3 py-2 hover:bg-gray-50">+</button>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={product.inventory === 0}
-                  className="flex-1 btn-primary flex items-center justify-center space-x-2"
-                >
+                <button onClick={handleAddToCart} disabled={product.inventory === 0}
+                  className="flex-1 btn-primary flex items-center justify-center space-x-2">
                   <ShoppingCartIcon className="w-5 h-5" />
                   <span>Add to Cart</span>
                 </button>
-
-                <button
-                  onClick={handleBuyNow}
-                  disabled={product.inventory === 0}
-                  className="flex-1 bg-slate-900 text-white px-6 py-3 rounded-lg font-semibold 
-                           hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
-                >
-                  <span>Buy Now</span>
+                <button onClick={handleBuyNow} disabled={product.inventory === 0}
+                  className="flex-1 bg-slate-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-slate-800">
+                  Buy Now
                 </button>
-
-                <button
-                  className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  aria-label="Add to wishlist"
-                >
+                <button className="p-3 border border-gray-300 rounded-lg hover:bg-gray-50">
                   <HeartIcon className="w-5 h-5" />
                 </button>
               </div>
@@ -264,32 +214,15 @@ export default function ProductPage({ product }: ProductPageProps) {
                 <span className="text-xs text-slate-600">Free Shipping</span>
               </div>
             </div>
-
-            {/* Warranty */}
-            {product.warranty && (
-              <div className="text-sm text-slate-600 border-t border-gray-200 pt-4">
-                <span className="font-medium text-slate-900">Warranty:</span> {product.warranty}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Product Specifications & Reviews */}
+        {/* Reviews & Related */}
         <div className="mt-16">
           <ProductReviews productId={product.id} />
         </div>
-
-        {/* Related Products */}
         <div className="mt-16">
-          <RelatedProducts 
-            category={product.categorySlug} 
-            currentProductId={product.id}
-          />
-        </div>
-
-        {/* Recently Viewed */}
-        <div className="mt-16">
-          <RecentlyViewed currentProductId={product.id} />
+          <RelatedProducts category={product.categorySlug} currentProductId={product.id} />
         </div>
       </div>
     </div>
@@ -297,29 +230,31 @@ export default function ProductPage({ product }: ProductPageProps) {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = PRODUCTS.map((product) => ({
-    params: { slug: product.slug },
-  }));
-
-  return {
-    paths,
-    fallback: true,
-  };
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://goodwill-production-058c.up.railway.app';
+    const response = await fetch(`${baseUrl}/api/products?limit=100`);
+    const data = await response.json();
+    const paths = (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
+    return { paths, fallback: true };
+  } catch {
+    return { paths: [], fallback: true };
+  }
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const product = PRODUCTS.find((p) => p.slug === params?.slug);
-
-  if (!product) {
-    return {
-      notFound: true,
+  try {
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://goodwill-production-058c.up.railway.app';
+    const response = await fetch(`${baseUrl}/api/products?slug=${params?.slug}`);
+    const data = await response.json();
+    const product = data.products?.[0] || null;
+    
+    if (!product) return { notFound: true };
+    
+    return { 
+      props: { product }, 
+      revalidate: 3600 
     };
+  } catch {
+    return { notFound: true };
   }
-
-  return {
-    props: {
-      product,
-    },
-    revalidate: 3600, // Revalidate every hour
-  };
 };
