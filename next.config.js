@@ -7,10 +7,29 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'goodwill-production-058c.up.railway.app',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.cloudinary.com',
         pathname: '/**',
       },
     ],
+    domains: [
+      'images.unsplash.com',
+      'goodwill-production-058c.up.railway.app',
+      'res.cloudinary.com'
+    ], // Keep for backward compatibility
   },
 };
 
