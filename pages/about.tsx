@@ -6,9 +6,11 @@ import {
   TruckIcon, 
   UsersIcon,
   StarIcon,
-  CheckBadgeIcon 
+  CheckBadgeIcon,
+  ArrowDownTrayIcon 
 } from '@heroicons/react/24/outline';
 import { MEDICAL_IMAGES } from '../constants/images';
+import { CertificateOfIncorporation } from '../components/about/CertificateOfIncorporation';
 
 export default function AboutPage() {
   const stats = [
@@ -282,8 +284,13 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Leadership Section - Single Leader */}
+        {/* Certificate of Incorporation Section - ADDED HERE */}
         <section className="py-16">
+          <CertificateOfIncorporation />
+        </section>
+
+        {/* Leadership Section - Single Leader */}
+        <section className="py-16 bg-soft-gray">
           <div className="container-padding max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
