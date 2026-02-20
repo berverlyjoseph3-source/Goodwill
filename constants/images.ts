@@ -1,23 +1,24 @@
-export const MEDICAL_IMAGES = {
-    products: {
-        thermometer: '/images/products/thermometer.png',
-        stethoscope: '/images/products/stethoscope.png',
-        bandage: '/images/products/bandage.png'
+// Constants for complete image paths
+
+const IMAGE_PATHS = {
+    FACILITY: {
+        LOGO: 'path/to/facility/logo.png',
+        BANNER: 'path/to/facility/banner.png',
+        // Add other facility images here
     },
-    testimonials: {
-        user1: '/images/testimonials/user1.jpg',
-        user2: '/images/testimonials/user2.jpg'
+    DOCTOR: {
+        PROFILE: 'path/to/doctor/profile.png',
+        // Add other doctor images here
     },
-    about: {
-        image1: '/images/about/image1.jpg',
-        image2: '/images/about/image2.jpg'
+    PATIENT: {
+        PROFILE: 'path/to/patient/profile.png',
+        // Add other patient images here
     },
-    categories: {
-        category1: '/images/categories/category1.png',
-        category2: '/images/categories/category2.png'
-    },
-    logos: {
-        logo1: '/images/logos/logo1.png',
-        logo2: '/images/logos/logo2.png'
+    PRODUCTS: {
+        CATEGORY_1: 'path/to/products/category1.png',
+        CATEGORY_2: 'path/to/products/category2.png',
+        // Add additional product categories as needed
     }
 };
+
+export default IMAGE_PATHS;
