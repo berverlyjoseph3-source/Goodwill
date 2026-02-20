@@ -94,20 +94,21 @@ export const ProductForm = ({
     setSpecifications(newSpecs);
   };
 
-  // ✅ UPDATED: Direct Cloudinary upload with upload preset
+  // ✅ FIXED: Direct Cloudinary upload with unsigned preset
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     setIsUploading(true);
-    const uploadedUrls: string[] = [];
-
+    
     try {
       for (const file of files) {
+        // Create form data
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', 'goodwill_products'); // Create this in Cloudinary
+        formData.append('upload_preset', 'goodwill_products'); // Must be UNSIGNED!
         
+        // Upload directly to Cloudinary - NO API KEY NEEDED!
         const response = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
@@ -117,20 +118,19 @@ export const ProductForm = ({
         );
         
         const data = await response.json();
+        console.log('Cloudinary response:', data);
         
         if (data.secure_url) {
-          uploadedUrls.push(data.secure_url);
+          setImages(prev => [...prev, data.secure_url]);
           toast.success(`Uploaded: ${file.name}`);
         } else {
-          toast.error(`Failed to upload: ${file.name}`);
+          toast.error(`Failed: ${data.error?.message || 'Unknown error'}`);
+          console.error('Cloudinary error:', data.error);
         }
       }
-
-      setImages([...images, ...uploadedUrls]);
-      toast.success('Images uploaded to Cloudinary!');
     } catch (error) {
-      toast.error('Image upload failed');
       console.error('Upload error:', error);
+      toast.error('Upload failed');
     } finally {
       setIsUploading(false);
     }
@@ -155,7 +155,6 @@ export const ProductForm = ({
     });
   };
 
-  // Rest of the component remains exactly the same...
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Basic Information */}
@@ -463,7 +462,7 @@ export const ProductForm = ({
         </div>
       </div>
 
-      {/* Product Images - WITH CLOUDINARY UPLOAD */}
+      {/* Product Images - FIXED CLOUDINARY UPLOAD */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -516,7 +515,7 @@ export const ProductForm = ({
           </label>
         </div>
         <p className="text-xs text-slate-500 mt-2">
-          Images are uploaded directly to Cloudinary and will be permanently stored
+          Images are uploaded directly to Cloudinary (unsigned preset)
         </p>
       </div>
 
