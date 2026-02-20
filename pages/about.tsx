@@ -12,10 +12,10 @@ import { MEDICAL_IMAGES } from '../constants/images';
 
 export default function AboutPage() {
   const stats = [
-    { label: 'Years of Service', value: '20+', icon: StarIcon },
-    { label: 'Hospitals Served', value: '500+', icon: HeartIcon },
-    { label: 'Products', value: '1,200+', icon: ShieldCheckIcon },
-    { label: 'Happy Patients', value: '50K+', icon: UsersIcon },
+    { label: 'Years of Service', value: '5+', icon: StarIcon },
+    { label: 'Hospitals Served', value: '15+', icon: HeartIcon },
+    { label: 'Products', value: '200+', icon: ShieldCheckIcon },
+    { label: 'Happy Patients', value: '10K+', icon: UsersIcon },
   ];
 
   const certifications = [
@@ -41,64 +41,60 @@ export default function AboutPage() {
     },
   ];
 
-  const team = [
-    {
-      name: 'Dr. Sarah Chen',
-      role: 'Chief Medical Officer',
-      image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&q=80',
-      bio: '20+ years of experience in hospital administration and medical equipment procurement.',
-    },
-    {
-      name: 'Michael Rodriguez',
-      role: 'CEO & Founder',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80',
-      bio: 'Former hospital administrator passionate about making quality medical care accessible.',
-    },
-    {
-      name: 'Dr. Emily Watson',
-      role: 'Director of Quality Assurance',
-      image: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80',
-      bio: 'Ensures all products meet rigorous FDA and ISO certification standards.',
-    },
-    {
-      name: 'James Park',
-      role: 'Head of Customer Support',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80',
-      bio: 'Leading a team of medical equipment specialists available 24/7.',
-    },
-  ];
+  // Updated team with only Nakiyembe Sheila
+  const leadership = {
+    name: 'Nakiyembe Sheila',
+    role: 'CEO & Founder',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&q=80',
+    bio: 'A remarkable businesswoman with 5 years of experience in medical sales. As the CEO of Goodwill Diagnostics Ltd, she has demonstrated exceptional leadership and entrepreneurial skills. Under her guidance, Goodwill Diagnostics Ltd has made significant contributions to the healthcare industry, providing innovative diagnostic solutions and services.',
+  };
 
+  // Updated timeline reflecting 5-year history
   const timeline = [
     {
-      year: '2003',
-      title: 'Company Founded',
-      description: 'Started as a small medical supply store in Chicago',
-    },
-    {
-      year: '2008',
-      title: 'FDA Partnership',
-      description: 'Became an FDA-registered medical device distributor',
-    },
-    {
-      year: '2012',
-      title: 'ISO Certification',
-      description: 'Achieved ISO 13485:2012 quality management certification',
-    },
-    {
-      year: '2016',
-      title: 'National Expansion',
-      description: 'Opened distribution centers on both coasts',
-    },
-    {
       year: '2020',
-      title: 'COVID-19 Response',
-      description: 'Delivered 2M+ PPE units to hospitals nationwide',
+      title: 'Company Founded',
+      description: 'Goodwill Diagnostics Ltd established by Nakiyembe Sheila in Kampala.',
+    },
+    {
+      year: '2021',
+      title: 'First Major Contracts',
+      description: 'Began serving local hospitals and clinics with diagnostic solutions.',
+    },
+    {
+      year: '2022',
+      title: 'Regional Expansion',
+      description: 'Extended services to international hospitals and specialized clinics.',
+    },
+    {
+      year: '2023',
+      title: 'ISO Certification',
+      description: 'Achieved ISO 13485:2016 quality management certification.',
     },
     {
       year: '2024',
-      title: 'Today',
-      description: 'Serving 500+ hospitals and 50,000+ home care patients',
+      title: 'Trusted Partner',
+      description: 'Became the preferred supplier for 10+ leading medical facilities.',
     },
+    {
+      year: '2025',
+      title: 'Continued Growth',
+      description: 'Expanding product range and strengthening client relationships.',
+    },
+  ];
+
+  // Client list from the provided image
+  const clients = [
+    'Platinum Medical Centre',
+    'IHK (International Hospital Kampala)',
+    'Kampala Hospital (Member of AAR Healthcare Group)',
+    'Mawano Dental Clinic',
+    "St. Catherine's Hospital",
+    'Shine Dental Clinic',
+    'AL-SHAFA MODERN HOSPITAL LTD.',
+    'NILE INTERNATIONAL HOSPITAL',
+    'CASE medCare',
+    'RUBY HOSPITAL (Beyond Healthcare)',
   ];
 
   return (
@@ -118,8 +114,8 @@ export default function AboutPage() {
                   <span className="text-medical-blue">Quality Healthcare</span>
                 </h1>
                 <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-                  For over two decades, Goodwill Medical Supplies has been the trusted partner 
-                  for hospitals, clinics, and home care patients across the nation. We don't 
+                  For over five years, Goodwill Diagnostics Ltd has been the trusted partner 
+                  for hospitals, clinics, and home care patients across the region. We don't 
                   just supply equipment – we provide peace of mind.
                 </p>
                 <div className="flex flex-wrap gap-4">
@@ -208,13 +204,13 @@ export default function AboutPage() {
                 Our Journey
               </h2>
               <p className="text-lg text-slate-600">
-                Two decades of growth, innovation, and unwavering commitment to quality
+                Five years of growth, innovation, and unwavering commitment to quality
               </p>
             </div>
             <div className="relative">
               {/* Timeline line */}
               <div className="absolute left-1/2 transform -translate-x-1/2 w-0.5 h-full bg-medical-blue/20 hidden lg:block" />
-              
+
               <div className="space-y-12">
                 {timeline.map((item, index) => (
                   <div key={item.year} className={`flex flex-col lg:flex-row ${index % 2 === 0 ? '' : 'lg:flex-row-reverse'}`}>
@@ -264,35 +260,55 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Team Section */}
+        {/* Clients Section */}
         <section className="py-16 bg-soft-gray">
           <div className="container-padding max-w-7xl mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                Leadership Team
+                Our Clients
               </h2>
               <p className="text-lg text-slate-600">
-                Experienced healthcare professionals dedicated to your success
+                Trusted by leading medical facilities across the region
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {team.map((member) => (
-                <div key={member.name} className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
-                  <div className="relative h-64">
-                    <Image
-                      src={member.image}
-                      alt={member.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-slate-900 mb-1">{member.name}</h3>
-                    <p className="text-sm text-medical-blue font-medium mb-3">{member.role}</p>
-                    <p className="text-sm text-slate-600">{member.bio}</p>
-                  </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients.map((client) => (
+                <div key={client} className="bg-white rounded-lg p-4 shadow-sm border border-gray-100 flex items-center">
+                  <CheckBadgeIcon className="w-5 h-5 text-medical-blue mr-2 flex-shrink-0" />
+                  <span className="text-slate-700 text-sm">{client}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Leadership Section - Single Leader */}
+        <section className="py-16">
+          <div className="container-padding max-w-7xl mx-auto">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                Our Leader
+              </h2>
+              <p className="text-lg text-slate-600">
+                Experienced leadership dedicated to healthcare excellence
+              </p>
+            </div>
+            <div className="max-w-3xl mx-auto">
+              <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <div className="relative h-96">
+                  <Image
+                    src={leadership.image}
+                    alt={leadership.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-8 text-center">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">{leadership.name}</h3>
+                  <p className="text-lg text-medical-blue font-medium mb-4">{leadership.role}</p>
+                  <p className="text-slate-600 leading-relaxed">{leadership.bio}</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -304,7 +320,7 @@ export default function AboutPage() {
               Ready to equip your facility?
             </h2>
             <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              Join 500+ hospitals and thousands of home care patients who trust Goodwill Medical Supplies
+              Join 15+ hospitals and thousands of home care patients who trust Goodwill Diagnostics Ltd
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Link
