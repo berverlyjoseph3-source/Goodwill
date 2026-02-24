@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { PRODUCTS } from '../../constants/images';
+import { PRODUCTS } from '../../constants/images'; // ✅ This path is correct
 import { Product } from '../../types';
 
 interface RecentlyViewedProps {
