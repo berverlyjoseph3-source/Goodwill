@@ -6,6 +6,7 @@ import { COMPANY_INFO } from '../../../constants/images';
 const contactSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
+  phone: z.string().optional(), // ✅ ADD THIS LINE - phone is optional
   subject: z.string().min(1),
   message: z.string().min(1),
 });
@@ -24,10 +25,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       <h2>New Contact Form Submission - ${COMPANY_INFO.name}</h2>
       <p><strong>Name:</strong> ${body.name}</p>
       <p><strong>Email:</strong> ${body.email}</p>
+      <p><strong>Phone:</strong> ${body.phone || 'Not provided'}</p>
       <p><strong>Subject:</strong> ${body.subject}</p>
       <p><strong>Message:</strong></p>
       <p>${body.message.replace(/\n/g, '<br>')}</p>
-      <p><strong>Phone:</strong> ${body.phone || 'Not provided'}</p>
     `;
 
     await sendEmail({
