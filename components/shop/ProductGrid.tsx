@@ -38,6 +38,25 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
     setIsClient(true);
   }, []);
 
+  // ✅ DEBUG: Log product data when received
+  useEffect(() => {
+    if (products.length > 0) {
+      console.log('📦 Products received in ProductGrid:', products.length);
+      products.forEach((p, i) => {
+        console.log(`Product ${i}:`, {
+          id: p.id,
+          name: p.name,
+          image: p.image,
+          fullImageUrl: typeof window !== 'undefined' 
+            ? (p.image.startsWith('http') ? p.image : `${window.location.origin}${p.image}`)
+            : p.image
+        });
+      });
+    } else {
+      console.log('📦 No products received in ProductGrid');
+    }
+  }, [products]);
+
   const toggleWishlist = (productId: number, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -72,7 +91,9 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
     setQuickViewProduct(productForModal as any);
   };
 
-  const handleImageError = (productId: number) => {
+  // ✅ UPDATED: Log failed image URLs
+  const handleImageError = (productId: number, imageUrl: string) => {
+    console.error(`❌ Image failed to load for product ${productId}:`, imageUrl);
     setFailedImages(prev => new Set(prev).add(productId));
   };
 
@@ -134,7 +155,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     priority={index < 4}
-                    onError={() => handleImageError(product.id)}
+                    onError={() => handleImageError(product.id, product.image)}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-6xl bg-soft-gray">
