@@ -202,6 +202,7 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
+    // Get database products
     const dbProducts = await prisma.product.findMany({
       include: {
         category: true,
@@ -229,6 +230,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
       warranty: p.warranty || '1 year'
     }));
 
+    // Get static products
     const formattedStatic = STATIC_PRODUCTS.map(p => ({
       id: p.id,
       name: p.name,
@@ -248,7 +250,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
       warranty: p.warranty
     }));
 
-    const allProducts = [...formattedDb, ...formattedStatic];
+    // ✅ FIX: Prioritize static products first
+    const allProducts = [...formattedStatic, ...formattedDb];
 
     return {
       props: {
@@ -259,6 +262,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   } catch (error) {
     console.error('Failed to fetch products:', error);
 
+    // Fallback to static only
     const formattedStatic = STATIC_PRODUCTS.map(p => ({
       id: p.id,
       name: p.name,
