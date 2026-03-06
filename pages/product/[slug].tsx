@@ -1,6 +1,6 @@
 import { GetStaticProps, GetStaticPaths } from 'next';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
@@ -18,28 +18,9 @@ import { ProductReviews } from '../../components/product/ProductReviews';
 import { RelatedProducts } from '../../components/product/RelatedProducts';
 import { RecentlyViewed } from '../../components/product/RecentlyViewed';
 import { useCartStore } from '../../stores/cartStore';
+import { PRODUCTS } from '../../constants/images'; // ✅ IMPORT LOCAL PRODUCTS
+import { Product } from '../../types';
 import toast from 'react-hot-toast';
-
-interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  sku: string;
-  price: number;
-  salePrice?: number;
-  image: string;
-  images?: string[];
-  category: string;
-  categorySlug: string;
-  brand: string;
-  rating: number;
-  reviewCount: number;
-  inventory: number;
-  description: string;
-  features?: string[];
-  deliveryEstimate?: string;
-  warranty?: string;
-}
 
 interface ProductPageProps {
   product: Product | null;
@@ -49,6 +30,7 @@ export default function ProductPage({ product }: ProductPageProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [imageError, setImageError] = useState(false);
   const addToCart = useCartStore((state) => state.addItem);
 
   if (router.isFallback) {
@@ -89,7 +71,10 @@ export default function ProductPage({ product }: ProductPageProps) {
     router.push('/checkout');
   };
 
-  const productImages = product.images?.length ? product.images : [product.image || '/images/placeholder.jpg'];
+  // Create images array for gallery
+  const productImages = product.images?.length 
+    ? product.images 
+    : [product.image || '/images/placeholder.jpg'];
 
   return (
     <div className="bg-white">
@@ -111,15 +96,25 @@ export default function ProductPage({ product }: ProductPageProps) {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
           {/* Gallery */}
           <div>
-            <ProductGallery 
-              images={productImages}
-              selectedIndex={selectedImage}
-              onSelect={setSelectedImage}
-              productName={product.name}
-            />
+            {imageError ? (
+              <div className="aspect-square bg-soft-gray rounded-2xl flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-8xl mb-4 block">🏥</span>
+                  <p className="text-slate-500">Image not available</p>
+                </div>
+              </div>
+            ) : (
+              <ProductGallery 
+                images={productImages}
+                selectedIndex={selectedImage}
+                onSelect={setSelectedImage}
+                productName={product.name}
+                onImageError={() => setImageError(true)}
+              />
+            )}
           </div>
 
-          {/* Product Info */}
+          {/* Product Info - Rest of your component remains the same */}
           <div className="space-y-6">
             <div>
               <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 mb-3">{product.name}</h1>
@@ -224,43 +219,47 @@ export default function ProductPage({ product }: ProductPageProps) {
 
         {/* Reviews & Related */}
         <div className="mt-16">
-          <ProductReviews productId={parseInt(product.id)} />
+          <ProductReviews productId={product.id} />
         </div>
         <div className="mt-16">
-          {/* ✅ FIXED: Convert string ID to number */}
-          <RelatedProducts category={product.categorySlug} currentProductId={parseInt(product.id)} />
+          <RelatedProducts category={product.categorySlug} currentProductId={product.id} />
+        </div>
+        <div className="mt-16">
+          <RecentlyViewed currentProductId={product.id} />
         </div>
       </div>
     </div>
   );
 }
 
+// ✅ FIXED: Use LOCAL PRODUCTS for paths
 export const getStaticPaths: GetStaticPaths = async () => {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://goodwill-production-058c.up.railway.app';
-    const response = await fetch(`${baseUrl}/api/products?limit=100`);
-    const data = await response.json();
-    const paths = (data.products || []).map((p: any) => ({ params: { slug: p.slug } }));
-    return { paths, fallback: true };
-  } catch {
-    return { paths: [], fallback: true };
-  }
+  const paths = PRODUCTS.map((product) => ({
+    params: { slug: product.slug },
+  }));
+
+  return {
+    paths,
+    fallback: true,
+  };
 };
 
+// ✅ FIXED: Use LOCAL PRODUCTS for props
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://goodwill-production-058c.up.railway.app';
-    const response = await fetch(`${baseUrl}/api/products?slug=${params?.slug}`);
-    const data = await response.json();
-    const product = data.products?.[0] || null;
-    
-    if (!product) return { notFound: true };
-    
-    return { 
-      props: { product }, 
-      revalidate: 3600 
-    };
-  } catch {
+  const product = PRODUCTS.find(p => p.slug === params?.slug) || null;
+  
+  if (!product) {
     return { notFound: true };
   }
+  
+  // Add images array if not present
+  const productWithImages = {
+    ...product,
+    images: product.images || [product.image],
+  };
+
+  return { 
+    props: { product: productWithImages }, 
+    revalidate: 3600 
+  };
 };
