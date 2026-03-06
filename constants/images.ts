@@ -93,7 +93,7 @@ export const MEDICAL_IMAGES = {
   },
 };
 
-// ============ PRODUCTS DATABASE ============
+// ============ PRODUCTS DATABASE - WITH IMAGES ARRAY ADDED ============
 export const PRODUCTS = [
   {
     id: 1,
@@ -103,6 +103,7 @@ export const PRODUCTS = [
     price: 299.99,
     salePrice: 249.99,
     image: MEDICAL_IMAGES.products.wheelchair,
+    images: [MEDICAL_IMAGES.products.wheelchair], // ✅ ADDED
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Diagnostics',
@@ -122,6 +123,7 @@ export const PRODUCTS = [
     price: 1299.99,
     salePrice: 1099.99,
     image: MEDICAL_IMAGES.products.wheelchairElectric,
+    images: [MEDICAL_IMAGES.products.wheelchairElectric], // ✅ ADDED
     category: 'Mobility Aids',
     categorySlug: 'mobility-aids',
     brand: 'Goodwill Diagnostics',
@@ -141,6 +143,7 @@ export const PRODUCTS = [
     price: 899.99,
     salePrice: 799.99,
     image: MEDICAL_IMAGES.products.oxygen,
+    images: [MEDICAL_IMAGES.products.oxygen], // ✅ ADDED
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'HealthCare Pro',
@@ -160,6 +163,7 @@ export const PRODUCTS = [
     price: 599.99,
     salePrice: 549.99,
     image: MEDICAL_IMAGES.products.cpap,
+    images: [MEDICAL_IMAGES.products.cpap], // ✅ ADDED
     category: 'Respiratory Equipment',
     categorySlug: 'respiratory',
     brand: 'MedTech',
@@ -178,6 +182,7 @@ export const PRODUCTS = [
     sku: 'HF-3001',
     price: 1299.99,
     image: MEDICAL_IMAGES.products.hospitalBed,
+    images: [MEDICAL_IMAGES.products.hospitalBed], // ✅ ADDED
     category: 'Hospital Furniture',
     categorySlug: 'hospital-furniture',
     brand: 'CarePlus',
@@ -196,6 +201,7 @@ export const PRODUCTS = [
     sku: 'DD-4001',
     price: 49.99,
     image: MEDICAL_IMAGES.products.bpMonitor,
+    images: [MEDICAL_IMAGES.products.bpMonitor], // ✅ ADDED
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'Vital Signs',
@@ -215,6 +221,7 @@ export const PRODUCTS = [
     price: 89.99,
     salePrice: 79.99,
     image: MEDICAL_IMAGES.products.stethoscope,
+    images: [MEDICAL_IMAGES.products.stethoscope], // ✅ ADDED
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'MedTech',
@@ -233,6 +240,7 @@ export const PRODUCTS = [
     sku: 'PPE-5001',
     price: 89.99,
     image: MEDICAL_IMAGES.products.n95Mask,
+    images: [MEDICAL_IMAGES.products.n95Mask], // ✅ ADDED
     category: 'PPE & Disposables',
     categorySlug: 'ppe',
     brand: 'HealthCare Pro',
@@ -251,6 +259,7 @@ export const PRODUCTS = [
     sku: 'PPE-5002',
     price: 24.99,
     image: MEDICAL_IMAGES.products.gloves,
+    images: [MEDICAL_IMAGES.products.gloves], // ✅ ADDED
     category: 'PPE & Disposables',
     categorySlug: 'ppe',
     brand: 'Goodwill Diagnostics',
@@ -269,6 +278,7 @@ export const PRODUCTS = [
     sku: 'DD-4003',
     price: 19.99,
     image: MEDICAL_IMAGES.products.thermometer,
+    images: [MEDICAL_IMAGES.products.thermometer], // ✅ ADDED
     category: 'Diagnostic Devices',
     categorySlug: 'diagnostic',
     brand: 'Vital Signs',
@@ -287,6 +297,7 @@ export const PRODUCTS = [
     sku: 'HC-6001',
     price: 2499.99,
     image: MEDICAL_IMAGES.products.patientMonitor,
+    images: [MEDICAL_IMAGES.products.patientMonitor], // ✅ ADDED
     category: 'Home Care Supplies',
     categorySlug: 'home-care',
     brand: 'Vital Signs',
@@ -305,6 +316,7 @@ export const PRODUCTS = [
     sku: 'HF-3002',
     price: 899.99,
     image: MEDICAL_IMAGES.products.examTable,
+    images: [MEDICAL_IMAGES.products.examTable], // ✅ ADDED
     category: 'Hospital Furniture',
     categorySlug: 'hospital-furniture',
     brand: 'CarePlus',
