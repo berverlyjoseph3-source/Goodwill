@@ -11,7 +11,7 @@ export const CEOSection = () => {
           <div className="relative h-[500px] md:h-[600px] rounded-2xl overflow-hidden shadow-xl">
             <Image
               src={MEDICAL_IMAGES.about.ceo}
-              alt="Nakiyembe Sheila - CEO of Goodwill Diagnostics Ltd"
+              alt="Nakiyembe Sheilah - CEO of Goodwill Diagnostics Ltd"
               fill
               className="object-cover object-center"
               priority
@@ -27,7 +27,7 @@ export const CEOSection = () => {
             </div>
 
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
-              Nakiyembe Sheila
+              Nakiyembe Sheilah
             </h2>
             
             <p className="text-lg text-medical-blue font-medium">
@@ -36,11 +36,11 @@ export const CEOSection = () => {
 
             <div className="prose prose-lg max-w-none text-slate-600 space-y-4">
               <p>
-                Nakiyembe Sheila is a remarkable businesswoman with 5 years of experience in the medical sales field. As the CEO of Goodwill Diagnostics Ltd, she has demonstrated exceptional leadership and entrepreneurial skills.
+                Nakiyembe Sheilah is a remarkable businesswoman with 5 years of experience in the medical sales field. As the CEO of Goodwill Diagnostics Ltd, she has demonstrated exceptional leadership and entrepreneurial skills.
               </p>
               
               <p>
-                Under her guidance, Goodwill Diagnostics Ltd has made significant contributions to the healthcare industry, providing innovative diagnostic solutions and services. As a seasoned professional in medical sales, Nakiyembe Sheila has developed a deep understanding of the industry's complexities and nuances.
+                Under her guidance, Goodwill Diagnostics Ltd has made significant contributions to the healthcare industry, providing innovative diagnostic solutions and services. As a seasoned professional in medical sales, Nakiyembe Sheilah has developed a deep understanding of the industry's complexities and nuances.
               </p>
             </div>
 
@@ -79,7 +79,7 @@ export const CEOSection = () => {
                   <div>
                     <p className="font-semibold text-slate-900">Entrepreneurial spirit</p>
                     <p className="text-sm text-slate-600">
-                      Nakiyembe Sheila has demonstrated a willingness to take calculated risks and innovate in the medical diagnostics field.
+                      Nakiyembe Sheilah has demonstrated a willingness to take calculated risks and innovate in the medical diagnostics field.
                     </p>
                   </div>
                 </div>
