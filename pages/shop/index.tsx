@@ -10,7 +10,7 @@ import { Pagination } from '../../components/shop/Pagination';
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { GetServerSideProps } from 'next'; // ✅ FIX: Add this import
+import { GetServerSideProps } from 'next';
 import { prisma } from '../../lib/prisma';
 import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images';
 
@@ -83,7 +83,7 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
         const data = await response.json();
 
         const transformedProducts = (data.products || []).map((p: any) => ({
-          id: parseInt(p.id) || 0,
+          id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id, // ✅ FIXED: Proper ID parsing
           name: p.name || '',
           slug: p.slug || '',
           sku: p.sku || `SKU-${p.id}`,
@@ -205,13 +205,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // ✅ DEBUG: Log image paths from static products
-    console.log('📸 Static Products images:', STATIC_PRODUCTS.map(p => ({ 
-      id: p.id, 
-      name: p.name, 
-      image: p.image 
-    })));
-
     // Get database products
     const dbProducts = await prisma.product.findMany({
       include: {
@@ -222,7 +215,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     });
 
     const formattedDb = dbProducts.map(p => ({
-      id: parseInt(p.id) || 0,
+      id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id, // ✅ FIXED: Proper ID parsing
       name: p.name || '',
       slug: p.slug || '',
       sku: p.sku || `SKU-${p.id}`,
@@ -239,13 +232,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
       deliveryEstimate: p.deliveryEstimate || '2-3 business days',
       warranty: p.warranty || '1 year'
     }));
-
-    // ✅ DEBUG: Log image paths from database
-    console.log('📸 DB Products images:', formattedDb.map(p => ({ 
-      id: p.id, 
-      name: p.name, 
-      image: p.image 
-    })));
 
     // Get static products
     const formattedStatic = STATIC_PRODUCTS.map(p => ({
@@ -298,12 +284,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
       deliveryEstimate: p.deliveryEstimate,
       warranty: p.warranty
     }));
-
-    console.log('📸 Fallback Static Products images:', formattedStatic.map(p => ({ 
-      id: p.id, 
-      name: p.name, 
-      image: p.image 
-    })));
 
     return {
       props: {
