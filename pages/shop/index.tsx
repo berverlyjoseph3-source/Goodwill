@@ -58,12 +58,10 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
   const [sortBy, setSortBy] = useState('featured');
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fix hydration mismatch
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Fetch products from API when filters change
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
@@ -83,7 +81,7 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
         const data = await response.json();
 
         const transformedProducts = (data.products || []).map((p: any) => ({
-          id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id, // ✅ FIXED: Proper ID parsing
+          id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id,
           name: p.name || '',
           slug: p.slug || '',
           sku: p.sku || `SKU-${p.id}`,
@@ -120,7 +118,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
     }
   }, [router.query.category]);
 
-  // Don't render until client-side to prevent flash
   if (!isClient) {
     return (
       <div className="min-h-screen bg-white">
@@ -205,7 +202,6 @@ export default function ShopPage({ initialProducts, totalCount: initialTotal }: 
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // Get database products
     const dbProducts = await prisma.product.findMany({
       include: {
         category: true,
@@ -215,7 +211,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     });
 
     const formattedDb = dbProducts.map(p => ({
-      id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id, // ✅ FIXED: Proper ID parsing
+      id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id,
       name: p.name || '',
       slug: p.slug || '',
       sku: p.sku || `SKU-${p.id}`,
@@ -233,7 +229,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
       warranty: p.warranty || '1 year'
     }));
 
-    // Get static products
     const formattedStatic = STATIC_PRODUCTS.map(p => ({
       id: p.id,
       name: p.name,
@@ -253,7 +248,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
       warranty: p.warranty
     }));
 
-    // COMBINE BOTH
     const allProducts = [...formattedDb, ...formattedStatic];
 
     return {
@@ -264,8 +258,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     };
   } catch (error) {
     console.error('Failed to fetch products:', error);
-    
-    // Fallback to static only
+
     const formattedStatic = STATIC_PRODUCTS.map(p => ({
       id: p.id,
       name: p.name,
