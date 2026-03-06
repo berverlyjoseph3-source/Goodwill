@@ -8,16 +8,19 @@ interface ProductGalleryProps {
   selectedIndex: number;
   onSelect: (index: number) => void;
   productName: string;
+  onImageError?: () => void;
 }
 
 export const ProductGallery = ({ 
   images, 
   selectedIndex, 
   onSelect, 
-  productName 
+  productName,
+  onImageError
 }: ProductGalleryProps) => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isZoomed) return;
@@ -33,6 +36,13 @@ export const ProductGallery = ({
 
   const handleNextImage = () => {
     onSelect(selectedIndex === images.length - 1 ? 0 : selectedIndex + 1);
+  };
+
+  const handleImageError = (index: number) => {
+    setImageErrors(prev => ({ ...prev, [index]: true }));
+    if (index === selectedIndex && onImageError) {
+      onImageError();
+    }
   };
 
   // If no images, show placeholder
@@ -56,28 +66,35 @@ export const ProductGallery = ({
             transition={{ duration: 0.2 }}
             className="relative w-full h-full"
           >
-            <Image
-              src={displayImages[selectedIndex]}
-              alt={`${productName} - Image ${selectedIndex + 1}`}
-              fill
-              className={`object-cover transition-transform duration-200 ${
-                isZoomed ? 'scale-150' : 'scale-100'
-              }`}
-              style={
-                isZoomed
-                  ? {
-                      transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
-                    }
-                  : undefined
-              }
-              sizes="(max-width: 768px) 100vw, 50vw"
-              priority
-            />
+            {imageErrors[selectedIndex] ? (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-6xl">🏥</span>
+              </div>
+            ) : (
+              <Image
+                src={displayImages[selectedIndex]}
+                alt={`${productName} - Image ${selectedIndex + 1}`}
+                fill
+                className={`object-cover transition-transform duration-200 ${
+                  isZoomed ? 'scale-150' : 'scale-100'
+                }`}
+                style={
+                  isZoomed
+                    ? {
+                        transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`,
+                      }
+                    : undefined
+                }
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+                onError={() => handleImageError(selectedIndex)}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
 
         {/* Navigation Arrows */}
-        {images.length > 1 && (
+        {displayImages.length > 1 && (
           <>
             <button
               onClick={handlePrevImage}
@@ -117,13 +134,20 @@ export const ProductGallery = ({
               aria-label={`View image ${index + 1}`}
               aria-selected={selectedIndex === index}
             >
-              <Image
-                src={image}
-                alt={`${productName} thumbnail ${index + 1}`}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 20vw, 10vw"
-              />
+              {imageErrors[index] ? (
+                <div className="w-full h-full bg-soft-gray flex items-center justify-center">
+                  <span className="text-xl">🏥</span>
+                </div>
+              ) : (
+                <Image
+                  src={image}
+                  alt={`${productName} thumbnail ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 20vw, 10vw"
+                  onError={() => handleImageError(index)}
+                />
+              )}
             </button>
           ))}
         </div>
