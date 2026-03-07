@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { prisma } from '../../../lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../auth/[...nextauth]';
+import { getProfessionalImageUrl } from '../../../lib/imageUtils';
 import { z } from 'zod';
 
 const productSchema = z.object({
@@ -28,7 +29,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // GET - Public, no auth required
+  // GET - Public endpoint
   if (req.method === 'GET') {
     try {
       const {
@@ -79,7 +80,6 @@ export default async function handler(
             category: true,
             images: {
               orderBy: { order: 'asc' },
-              take: 1,
             },
           },
           orderBy: { [sort as string]: order },
@@ -89,32 +89,41 @@ export default async function handler(
         prisma.product.count({ where }),
       ]);
 
-      // Format products
-      const formattedProducts = products.map(product => ({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        sku: product.sku,
-        price: product.price,
-        salePrice: product.salePrice,
-        description: product.description,
-        shortDescription: product.shortDescription,
-        inventory: product.inventory,
-        brand: product.brand,
-        rating: product.rating,
-        reviewCount: product.reviewCount,
-        category: product.category,
-        categoryId: product.categoryId,
-        tags: product.tags,
-        features: product.features,
-        isFeatured: product.isFeatured,
-        isNew: product.isNew,
-        deliveryEstimate: product.deliveryEstimate,
-        warranty: product.warranty,
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-        image: product.images[0]?.url || '/images/placeholder.jpg',
-      }));
+      // PROFESSIONAL FORMATTING with image fixing
+      const formattedProducts = products.map(product => {
+        // Get primary image or placeholder
+        const primaryImage = product.images && product.images.length > 0 
+          ? product.images[0].url 
+          : '/images/placeholder.jpg';
+
+        return {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          sku: product.sku,
+          price: product.price,
+          salePrice: product.salePrice,
+          description: product.description,
+          shortDescription: product.shortDescription,
+          inventory: product.inventory,
+          brand: product.brand,
+          rating: product.rating,
+          reviewCount: product.reviewCount,
+          category: product.category,
+          categoryId: product.categoryId,
+          tags: product.tags,
+          features: product.features,
+          isFeatured: product.isFeatured,
+          isNew: product.isNew,
+          deliveryEstimate: product.deliveryEstimate,
+          warranty: product.warranty,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          // PROFESSIONAL: Fix image URLs
+          image: getProfessionalImageUrl(primaryImage),
+          images: product.images?.map(img => getProfessionalImageUrl(img.url)) || [],
+        };
+      });
 
       return res.status(200).json({
         success: true,
@@ -127,7 +136,7 @@ export default async function handler(
         },
       });
     } catch (error) {
-      console.error('GET products error:', error);
+      console.error('[API] Products GET error:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to fetch products',
@@ -135,7 +144,7 @@ export default async function handler(
     }
   }
 
-  // POST - Admin only
+  // POST - Admin only (your existing POST code)
   if (req.method === 'POST') {
     const session = await getServerSession(req, res, authOptions);
 
@@ -164,6 +173,9 @@ export default async function handler(
         });
       }
 
+      // PROFESSIONAL: Fix image URLs before storing
+      const fixedImages = body.images?.map(url => getProfessionalImageUrl(url)) || [];
+
       const product = await prisma.product.create({
         data: {
           name: body.name,
@@ -183,11 +195,11 @@ export default async function handler(
           deliveryEstimate: body.deliveryEstimate,
           warranty: body.warranty,
           images: {
-            create: body.images?.map((url, index) => ({
-              url: url.startsWith('/') ? url : `/${url}`,
+            create: fixedImages.map((url, index) => ({
+              url,
               alt: body.name,
               order: index,
-            })) || [],
+            })),
           },
         },
         include: {
@@ -210,7 +222,7 @@ export default async function handler(
         });
       }
 
-      console.error('POST product error:', error);
+      console.error('[API] Products POST error:', error);
       return res.status(500).json({
         success: false,
         message: 'Failed to create product',
