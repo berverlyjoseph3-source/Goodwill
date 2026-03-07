@@ -32,30 +32,18 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // ✅ DEBUG: Log product data when received
-  useEffect(() => {
-    if (products.length > 0) {
-      console.log('📦 Products received in ProductGrid:', products.length);
-      products.forEach((p, i) => {
-        console.log(`Product ${i}:`, {
-          id: p.id,
-          name: p.name,
-          image: p.image,
-          fullImageUrl: typeof window !== 'undefined' 
-            ? (p.image.startsWith('http') ? p.image : `${window.location.origin}${p.image}`)
-            : p.image
-        });
-      });
-    } else {
-      console.log('📦 No products received in ProductGrid');
-    }
-  }, [products]);
+  // ✅ FIX 1: Fix image URL by ensuring it starts with /
+  const getFixedImageUrl = (imagePath: string) => {
+    if (!imagePath) return '/images/placeholder.jpg';
+    if (imagePath.startsWith('http')) return imagePath;
+    // Ensure path starts with /
+    return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  };
 
   const toggleWishlist = (productId: number, e: React.MouseEvent) => {
     e.preventDefault();
@@ -91,10 +79,9 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
     setQuickViewProduct(productForModal as any);
   };
 
-  // ✅ UPDATED: Log failed image URLs
+  // ✅ FIX 2: Log image URLs for debugging
   const handleImageError = (productId: number, imageUrl: string) => {
     console.error(`❌ Image failed to load for product ${productId}:`, imageUrl);
-    setFailedImages(prev => new Set(prev).add(productId));
   };
 
   if (!isClient) {
@@ -147,9 +134,9 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
 
             <Link href={`/product/${product.slug}`} className="block relative">
               <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative" style={{ minHeight: '200px' }}>
-                {product?.image && !failedImages.has(product.id) ? (
+                {product?.image ? (
                   <Image
-                    src={product.image}
+                    src={getFixedImageUrl(product.image)}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
