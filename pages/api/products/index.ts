@@ -91,34 +91,50 @@ export default async function handler(
         prisma.product.count({ where }),
       ]);
 
-      // ✅ FIXED: Keep the image field but don't remove images array
-      const formattedProducts = products.map(product => ({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        sku: product.sku,
-        price: product.price,
-        salePrice: product.salePrice,
-        description: product.description,
-        shortDescription: product.shortDescription,
-        inventory: product.inventory,
-        brand: product.brand,
-        rating: product.rating,
-        reviewCount: product.reviewCount,
-        category: product.category,
-        categoryId: product.categoryId,
-        tags: product.tags,
-        features: product.features,
-        isFeatured: product.isFeatured,
-        isNew: product.isNew,
-        deliveryEstimate: product.deliveryEstimate,
-        warranty: product.warranty,
-        createdAt: product.createdAt,
-        updatedAt: product.updatedAt,
-        // ✅ Keep both image and images for compatibility
-        image: product.images[0]?.url || '/images/placeholder.jpg',
-        images: product.images.map(img => img.url), // ← KEEP THIS!
-      }));
+      // Format products - FIX image URLs
+      const formattedProducts = products.map(product => {
+        // ✅ FIX: Ensure image path starts with /
+        let imageUrl = '/images/placeholder.jpg';
+        if (product.images && product.images.length > 0) {
+          imageUrl = product.images[0].url;
+          // Ensure it starts with /
+          if (imageUrl && !imageUrl.startsWith('/') && !imageUrl.startsWith('http')) {
+            imageUrl = `/${imageUrl}`;
+          }
+        }
+
+        return {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          sku: product.sku,
+          price: product.price,
+          salePrice: product.salePrice,
+          description: product.description,
+          shortDescription: product.shortDescription,
+          inventory: product.inventory,
+          brand: product.brand,
+          rating: product.rating,
+          reviewCount: product.reviewCount,
+          category: product.category,
+          categoryId: product.categoryId,
+          tags: product.tags,
+          features: product.features,
+          isFeatured: product.isFeatured,
+          isNew: product.isNew,
+          deliveryEstimate: product.deliveryEstimate,
+          warranty: product.warranty,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          image: imageUrl,
+          images: product.images.map(img => {
+            // Ensure each image URL starts with /
+            return img.url.startsWith('/') || img.url.startsWith('http') 
+              ? img.url 
+              : `/${img.url}`;
+          }),
+        };
+      });
 
       return res.status(200).json({
         success: true,
@@ -191,7 +207,8 @@ export default async function handler(
           warranty: body.warranty,
           images: {
             create: body.images?.map((url, index) => ({
-              url,
+              // ✅ FIX: Store with leading slash
+              url: url.startsWith('/') ? url : `/${url}`,
               alt: body.name,
               order: index,
             })) || [],
