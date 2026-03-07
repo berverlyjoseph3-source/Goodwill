@@ -1,290 +1,225 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FilterSidebar } from '../../components/shop/FilterSidebar';
-import { ProductGrid } from '../../components/shop/ProductGrid';
-import { ProductSkeleton } from '../../components/ui/ProductSkeleton';
-import { SortSelect } from '../../components/shop/SortSelect';
-import { MobileFilterDrawer } from '../../components/shop/MobileFilterDrawer';
-import { Pagination } from '../../components/shop/Pagination';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
-import { ChevronRightIcon } from '@heroicons/react/24/outline';
-import { GetServerSideProps } from 'next';
-import { prisma } from '../../lib/prisma';
-import { PRODUCTS as STATIC_PRODUCTS } from '../../constants/images';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { prisma } from '../../../lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '../auth/[...nextauth]';
+import { z } from 'zod';
 
-interface Product {
-  id: number;
-  name: string;
-  slug: string;
-  sku: string;
-  price: number;
-  salePrice?: number;
-  image: string;
-  category: string;
-  categorySlug: string;
-  brand: string;
-  rating: number;
-  reviewCount: number;
-  inventory: number;
-  description: string;
-  deliveryEstimate: string;
-  warranty: string;
-}
+const productSchema = z.object({
+  name: z.string().min(1),
+  sku: z.string().min(1),
+  slug: z.string().optional(),
+  description: z.string(),
+  shortDescription: z.string(),
+  price: z.number().positive(),
+  salePrice: z.number().positive().optional().nullable(),
+  inventory: z.number().int().min(0),
+  categoryId: z.string(),
+  brand: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  features: z.array(z.string()).optional(),
+  images: z.array(z.string()).optional(),
+  isFeatured: z.boolean().optional(),
+  isNew: z.boolean().optional(),
+  deliveryEstimate: z.string().optional(),
+  warranty: z.string().optional(),
+});
 
-interface ShopPageProps {
-  initialProducts: Product[];
-  totalCount: number;
-}
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  // GET - Public, no auth required
+  if (req.method === 'GET') {
+    try {
+      const {
+        page = 1,
+        limit = 12,
+        category,
+        search,
+        minPrice,
+        maxPrice,
+        brand,
+        sort = 'createdAt',
+        order = 'desc',
+      } = req.query;
 
-export default function ShopPage({ initialProducts, totalCount: initialTotal }: ShopPageProps) {
-  const router = useRouter();
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  // ✅ FIX: Ensure products is always an array
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [isLoading, setIsLoading] = useState(false);
-  const [totalCount, setTotalCount] = useState(initialTotal || 0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isClient, setIsClient] = useState(false);
+      const skip = (Number(page) - 1) * Number(limit);
+      const take = Number(limit);
 
-  const [filters, setFilters] = useState({
-    category: typeof router.query.category === 'string' ? router.query.category : '',
-    priceRange: [0, 5000],
-    brand: [] as string[],
-    availability: 'all',
-    rating: 0
-  });
+      // Build where clause
+      const where: any = {};
 
-  const [sortBy, setSortBy] = useState('featured');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setIsLoading(true);
-      try {
-        const params = new URLSearchParams();
-        if (filters.category) params.append('category', filters.category);
-        if (filters.priceRange[0] > 0) params.append('minPrice', filters.priceRange[0].toString());
-        if (filters.priceRange[1] < 5000) params.append('maxPrice', filters.priceRange[1].toString());
-        if (filters.brand.length > 0) params.append('brand', filters.brand.join(','));
-        if (filters.availability !== 'all') params.append('availability', filters.availability);
-        if (filters.rating > 0) params.append('rating', filters.rating.toString());
-        params.append('sort', sortBy);
-        params.append('page', currentPage.toString());
-        params.append('limit', '12');
-
-        const response = await fetch(`/api/products?${params.toString()}`);
-        const data = await response.json();
-
-        const transformedProducts = (data.products || []).map((p: any) => ({
-          id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id,
-          name: p.name || '',
-          slug: p.slug || '',
-          sku: p.sku || `SKU-${p.id}`,
-          price: p.price || 0,
-          salePrice: p.salePrice,
-          image: p.image || '/images/placeholder.jpg',
-          category: p.category?.name || p.category || 'Uncategorized',
-          categorySlug: p.categorySlug || '',
-          brand: p.brand || 'Goodwill Medical',
-          rating: p.rating || 0,
-          reviewCount: p.reviewCount || 0,
-          inventory: p.inventory || 0,
-          description: p.description || '',
-          deliveryEstimate: p.deliveryEstimate || '2-3 business days',
-          warranty: p.warranty || '1 year'
-        }));
-
-        setProducts(transformedProducts);
-        setTotalCount(data.pagination?.total || 0);
-        setTotalPages(data.pagination?.totalPages || 1);
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
-      } finally {
-        setIsLoading(false);
+      if (category) {
+        where.categoryId = category;
       }
-    };
 
-    fetchProducts();
-  }, [filters, sortBy, currentPage]);
+      if (search) {
+        where.OR = [
+          { name: { contains: search as string, mode: 'insensitive' } },
+          { description: { contains: search as string, mode: 'insensitive' } },
+          { sku: { contains: search as string, mode: 'insensitive' } },
+        ];
+      }
 
-  useEffect(() => {
-    if (router.query.category && typeof router.query.category === 'string') {
-      setFilters(prev => ({ ...prev, category: router.query.category as string }));
+      if (minPrice || maxPrice) {
+        where.price = {};
+        if (minPrice) where.price.gte = Number(minPrice);
+        if (maxPrice) where.price.lte = Number(maxPrice);
+      }
+
+      if (brand) {
+        where.brand = { in: (brand as string).split(',') };
+      }
+
+      // Get products with pagination
+      const [products, total] = await Promise.all([
+        prisma.product.findMany({
+          where,
+          include: {
+            category: true,
+            images: {
+              orderBy: { order: 'asc' },
+              take: 1,
+            },
+          },
+          orderBy: { [sort as string]: order },
+          skip,
+          take,
+        }),
+        prisma.product.count({ where }),
+      ]);
+
+      // Format products
+      const formattedProducts = products.map(product => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        sku: product.sku,
+        price: product.price,
+        salePrice: product.salePrice,
+        description: product.description,
+        shortDescription: product.shortDescription,
+        inventory: product.inventory,
+        brand: product.brand,
+        rating: product.rating,
+        reviewCount: product.reviewCount,
+        category: product.category,
+        categoryId: product.categoryId,
+        tags: product.tags,
+        features: product.features,
+        isFeatured: product.isFeatured,
+        isNew: product.isNew,
+        deliveryEstimate: product.deliveryEstimate,
+        warranty: product.warranty,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+        image: product.images[0]?.url || '/images/placeholder.jpg',
+      }));
+
+      return res.status(200).json({
+        success: true,
+        products: formattedProducts,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          pages: Math.ceil(total / Number(limit)),
+        },
+      });
+    } catch (error) {
+      console.error('GET products error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to fetch products',
+      });
     }
-  }, [router.query.category]);
-
-  if (!isClient) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="container-padding max-w-7xl mx-auto py-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
-          </div>
-        </div>
-      </div>
-    );
   }
 
-  return (
-    <div className="min-h-screen bg-white">
-      <nav className="bg-soft-gray py-3" aria-label="Breadcrumb">
-        <div className="container-padding max-w-7xl mx-auto">
-          <ol className="flex items-center space-x-2 text-sm">
-            <li><Link href="/" className="text-slate-600 hover:text-medical-blue">Home</Link></li>
-            <li><ChevronRightIcon className="w-4 h-4 text-slate-400" /></li>
-            <li className="text-slate-800 font-medium">Shop</li>
-          </ol>
-        </div>
-      </nav>
+  // POST - Admin only
+  if (req.method === 'POST') {
+    const session = await getServerSession(req, res, authOptions);
 
-      <div className="container-padding max-w-7xl mx-auto py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <aside className="hidden lg:block w-80 flex-shrink-0">
-            <div className="sticky top-24">
-              <FilterSidebar filters={filters} onFilterChange={setFilters} />
-            </div>
-          </aside>
+    if (!session || (session.user.role !== 'ADMIN' && session.user.role !== 'MANAGER')) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+      });
+    }
 
-          <button
-            onClick={() => setIsFilterOpen(true)}
-            className="lg:hidden btn-secondary w-full mb-4 flex items-center justify-center"
-          >
-            <AdjustmentsHorizontalIcon className="w-5 h-5 mr-2" />
-            Filters
-          </button>
+    try {
+      const body = productSchema.parse(req.body);
 
-          <AnimatePresence>
-            {isFilterOpen && (
-              <MobileFilterDrawer
-                isOpen={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                filters={filters}
-                onFilterChange={setFilters}
-              />
-            )}
-          </AnimatePresence>
+      const slug = body.slug || body.name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
 
-          <main className="flex-1">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
-              <p className="text-slate-600 mb-2 sm:mb-0">
-                Showing <span className="font-semibold">{products.length}</span> of 
-                <span className="font-semibold"> {totalCount}</span> products
-              </p>
-              <SortSelect value={sortBy} onChange={setSortBy} />
-            </div>
+      const existingSku = await prisma.product.findUnique({
+        where: { sku: body.sku },
+      });
 
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(8)].map((_, i) => <ProductSkeleton key={i} />)}
-              </div>
-            ) : (
-              <ProductGrid products={products} />
-            )}
+      if (existingSku) {
+        return res.status(400).json({
+          success: false,
+          message: 'Product with this SKU already exists',
+        });
+      }
 
-            {totalPages > 1 && (
-              <Pagination 
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={setCurrentPage}
-              />
-            )}
-          </main>
-        </div>
-      </div>
-    </div>
-  );
+      const product = await prisma.product.create({
+        data: {
+          name: body.name,
+          sku: body.sku,
+          slug,
+          description: body.description,
+          shortDescription: body.shortDescription,
+          price: body.price,
+          salePrice: body.salePrice || null,
+          inventory: body.inventory,
+          categoryId: body.categoryId,
+          brand: body.brand,
+          tags: body.tags || [],
+          features: body.features || [],
+          isFeatured: body.isFeatured || false,
+          isNew: body.isNew || false,
+          deliveryEstimate: body.deliveryEstimate,
+          warranty: body.warranty,
+          images: {
+            create: body.images?.map((url, index) => ({
+              url: url.startsWith('/') ? url : `/${url}`,
+              alt: body.name,
+              order: index,
+            })) || [],
+          },
+        },
+        include: {
+          category: true,
+          images: true,
+        },
+      });
+
+      return res.status(201).json({
+        success: true,
+        message: 'Product created successfully',
+        product,
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: error.errors,
+        });
+      }
+
+      console.error('POST product error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create product',
+      });
+    }
+  }
+
+  return res.status(405).json({
+    success: false,
+    message: 'Method not allowed',
+  });
 }
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  try {
-    const dbProducts = await prisma.product.findMany({
-      include: {
-        category: true,
-        images: { take: 1 }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
-
-    const formattedDb = dbProducts.map(p => ({
-      id: typeof p.id === 'string' ? parseInt(p.id, 10) : p.id,
-      name: p.name || '',
-      slug: p.slug || '',
-      sku: p.sku || `SKU-${p.id}`,
-      price: p.price.toNumber(),
-      salePrice: p.salePrice?.toNumber() || null,
-      // ✅ Keep original image path
-      image: p.images[0]?.url || '/images/placeholder.jpg',
-      category: p.category?.name || 'Uncategorized',
-      categorySlug: p.category?.slug || '',
-      brand: p.brand || 'Goodwill Medical',
-      rating: p.rating || 0,
-      reviewCount: p.reviewCount || 0,
-      inventory: p.inventory || 0,
-      description: p.description || '',
-      deliveryEstimate: p.deliveryEstimate || '2-3 business days',
-      warranty: p.warranty || '1 year'
-    }));
-
-    const formattedStatic = STATIC_PRODUCTS.map(p => ({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      sku: p.sku,
-      price: p.price,
-      salePrice: p.salePrice,
-      image: p.image,
-      category: p.category,
-      categorySlug: p.categorySlug,
-      brand: p.brand,
-      rating: p.rating,
-      reviewCount: p.reviewCount,
-      inventory: p.inventory,
-      description: p.description,
-      deliveryEstimate: p.deliveryEstimate,
-      warranty: p.warranty
-    }));
-
-    const allProducts = [...formattedStatic, ...formattedDb];
-
-    return {
-      props: {
-        initialProducts: allProducts,
-        totalCount: allProducts.length
-      }
-    };
-  } catch (error) {
-    console.error('Failed to fetch products:', error);
-
-    const formattedStatic = STATIC_PRODUCTS.map(p => ({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      sku: p.sku,
-      price: p.price,
-      salePrice: p.salePrice,
-      image: p.image,
-      category: p.category,
-      categorySlug: p.categorySlug,
-      brand: p.brand,
-      rating: p.rating,
-      reviewCount: p.reviewCount,
-      inventory: p.inventory,
-      description: p.description,
-      deliveryEstimate: p.deliveryEstimate,
-      warranty: p.warranty
-    }));
-
-    return {
-      props: {
-        initialProducts: formattedStatic,
-        totalCount: formattedStatic.length
-      }
-    };
-  }
-};
