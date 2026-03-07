@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       orderBy: { createdAt: 'desc' }
     });
 
-    // Format database products
+    // Format database products - FIX image URLs
     const formattedDbProducts = dbProducts.map(product => ({
       id: parseInt(product.id) || 0,
       name: product.name || '',
@@ -23,7 +23,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sku: product.sku || `SKU-${product.id}`,
       price: product.price.toNumber(),
       salePrice: product.salePrice?.toNumber() || null,
-      image: product.images[0]?.url || '/images/placeholder.jpg',
+      // ✅ FIX: Ensure image path starts with /
+      image: product.images[0]?.url 
+        ? (product.images[0].url.startsWith('/') ? product.images[0].url : `/${product.images[0].url}`)
+        : '/images/placeholder.jpg',
       category: product.category?.name || 'Uncategorized',
       categorySlug: product.category?.slug || '',
       brand: product.brand || 'Goodwill Medical',
@@ -35,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       warranty: product.warranty || '1 year'
     }));
 
-    // Format static products
+    // Format static products (these already have correct paths)
     const formattedStaticProducts = STATIC_PRODUCTS.map(product => ({
       id: product.id,
       name: product.name,
@@ -43,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       sku: product.sku,
       price: product.price,
       salePrice: product.salePrice || undefined,
-      image: product.image,
+      image: product.image, // These already start with /
       category: product.category,
       categorySlug: product.categorySlug,
       brand: product.brand,
@@ -55,8 +58,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       warranty: product.warranty
     }));
 
-    // Combine both
-    const allProducts = [...formattedDbProducts, ...formattedStaticProducts];
+    // Combine both - prioritize static products to ensure images show
+    const allProducts = [...formattedStaticProducts, ...formattedDbProducts];
 
     res.status(200).json({ 
       products: allProducts,
