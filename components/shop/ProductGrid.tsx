@@ -1,16 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { HeartIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { ShoppingCartIcon, StarIcon } from '@heroicons/react/24/solid';
 import { StarIcon as StarOutlineIcon } from '@heroicons/react/24/outline';
 import { QuickViewModal } from './QuickViewModal';
+import { getProfessionalImageUrl } from '../../lib/imageUtils';
 import toast from 'react-hot-toast';
 
 interface Product {
   id: number;
-  id_str?: string;
   name: string;
   slug: string;
   price: number;
@@ -32,17 +32,23 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // ✅ FIX 1: Fix image URL by ensuring it starts with /
-  const getFixedImageUrl = (imagePath: string) => {
-    if (!imagePath) return '/images/placeholder.jpg';
-    if (imagePath.startsWith('http')) return imagePath;
-    // Ensure path starts with /
-    return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  // PROFESSIONAL: Pre-process products with memoization
+  const processedProducts = useMemo(() => {
+    return products.map(product => ({
+      ...product,
+      processedImage: getProfessionalImageUrl(product.image),
+    }));
+  }, [products]);
+
+  const handleImageError = (productId: number) => {
+    setImageErrors(prev => new Set(prev).add(productId));
+    console.warn(`[Image Error] Product ID ${productId} failed to load`);
   };
 
   const toggleWishlist = (productId: number, e: React.MouseEvent) => {
@@ -56,32 +62,18 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
     toast.success(
       wishlist.includes(productId.toString()) 
         ? 'Removed from wishlist' 
-        : 'Added to wishlist',
-      { icon: '❤️' }
+        : 'Added to wishlist'
     );
   };
 
   const handleAddToCart = (product: Product, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    toast.success(`${product.name} added to cart`, {
-      icon: '🛒',
-      duration: 3000,
-    });
+    toast.success(`${product.name} added to cart`);
   };
 
   const handleQuickView = (product: Product) => {
-    const productForModal = {
-      ...product,
-      id_str: product.id.toString(),
-      id: product.id.toString()
-    };
-    setQuickViewProduct(productForModal as any);
-  };
-
-  // ✅ FIX 2: Log image URLs for debugging
-  const handleImageError = (productId: number, imageUrl: string) => {
-    console.error(`❌ Image failed to load for product ${productId}:`, imageUrl);
+    setQuickViewProduct(product);
   };
 
   if (!isClient) {
@@ -113,7 +105,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product, index) => (
+        {processedProducts.map((product, index) => (
           <div
             key={product.id}
             className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 relative flex flex-col"
@@ -133,20 +125,21 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
             </button>
 
             <Link href={`/product/${product.slug}`} className="block relative">
-              <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative" style={{ minHeight: '200px' }}>
-                {product?.image ? (
+              <div className="aspect-square bg-gradient-to-br from-soft-gray to-gray-100 rounded-t-xl overflow-hidden relative">
+                {!imageErrors.has(product.id) ? (
                   <Image
-                    src={getFixedImageUrl(product.image)}
+                    src={product.processedImage}
                     alt={product.name}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     priority={index < 4}
-                    onError={() => handleImageError(product.id, product.image)}
+                    onError={() => handleImageError(product.id)}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-6xl bg-soft-gray">
-                    🏥
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-soft-gray">
+                    <span className="text-4xl mb-2">🏥</span>
+                    <span className="text-xs text-slate-400">Image unavailable</span>
                   </div>
                 )}
 
@@ -223,7 +216,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
               {product.inventory < 10 && product.inventory > 0 && (
                 <p className="text-xs text-orange-600 mt-2 flex items-center">
                   <span className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1.5"></span>
-                  Only {product.inventory} left in stock
+                  Only {product.inventory} left
                 </p>
               )}
 
@@ -242,7 +235,7 @@ export const ProductGrid = ({ products = [] }: ProductGridProps) => {
         <QuickViewModal
           product={{
             ...quickViewProduct,
-            id: quickViewProduct.id_str || quickViewProduct.id.toString()
+            id: quickViewProduct.id.toString()
           }}
           isOpen={!!quickViewProduct}
           onClose={() => setQuickViewProduct(null)}
