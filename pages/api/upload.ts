@@ -2,34 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './auth/[...nextauth]';
 import { v2 as cloudinary } from 'cloudinary';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-
-// Disable Next.js body parser
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-// Configure multer for memory storage
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-});
-
-// Helper to run multer middleware
-const runMiddleware = (req: NextApiRequest, res: NextApiResponse, fn: any) => {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
-};
 
 // Configure Cloudinary
 cloudinary.config({
@@ -37,6 +9,14 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb', // Increase size limit for images
+    },
+  },
+};
 
 export default async function handler(
   req: NextApiRequest,
@@ -59,46 +39,46 @@ export default async function handler(
   }
 
   try {
-    // Run multer middleware
-    await runMiddleware(req, res, upload.single('file'));
-
-    // Get the file from request
-    const file = (req as any).file;
-    if (!file) {
+    const { image } = req.body;
+    
+    if (!image) {
       return res.status(400).json({ 
         success: false, 
-        error: 'No file uploaded' 
+        error: 'No image data provided' 
+      });
+    }
+
+    // Validate that it's a base64 image
+    if (!image.startsWith('data:image')) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Invalid image format. Expected base64 image data.' 
       });
     }
 
     // Upload to Cloudinary
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'goodwill-products',
-          transformation: [
-            { width: 800, height: 800, crop: 'limit' },
-            { quality: 'auto' }
-          ],
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-
-      uploadStream.end(file.buffer);
+    const result = await cloudinary.uploader.upload(image, {
+      folder: 'goodwill-products',
+      transformation: [
+        { width: 800, height: 800, crop: 'limit' },
+        { quality: 'auto' },
+        { fetch_format: 'auto' }
+      ],
     });
 
     return res.status(200).json({ 
       success: true, 
-      url: (result as any).secure_url 
+      url: result.secure_url,
+      public_id: result.public_id
     });
-  } catch (error) {
-    console.error('Upload error:', error);
+  } catch (error: any) {
+    console.error('Upload error details:', error);
+    
+    // Return specific error message
     return res.status(500).json({ 
       success: false, 
-      error: 'Upload failed' 
+      error: error.message || 'Upload failed',
+      details: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 }
