@@ -5,7 +5,7 @@ export const getImageUrl = (url: string | undefined | null): string => {
   if (url.startsWith('http')) return url;
   
   // If it's a relative path, prepend your domain
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goodwill-production-058c.up.railway.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://goodwill-9fsa.onrender.com';
   return `${baseUrl}${url}`;
 };
 
